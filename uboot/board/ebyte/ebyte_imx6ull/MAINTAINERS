@@ -1,0 +1,10 @@
+MX6ULLEVK BOARD
+F:	board/ebyte/ebyte_imx6ull
+F:	include/configs/ebyte_imx6ull.h
+F:	configs/ebyte_imx6ull_nand_defconfig
+F:	configs/ebyte_imx6ull_emmc_defconfig
+F:	arch/arm/dts/ebyte-imx6ull-base.dts
+F:	arch/arm/dts/ebyte-imx6ull-u-boot.dtsi
+F:	arch/arm/dts/ebyte-imx6ull-external.dtsi
+F:	arch/arm/dts/ebyte-imx6ull-emmc.dts
+F:	arch/arm/dts/ebyte-imx6ull-gpmi-weim.dts

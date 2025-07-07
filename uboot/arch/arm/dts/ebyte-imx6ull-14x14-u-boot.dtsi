@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+&{/aliases} {
+	u-boot,dm-pre-reloc;
+	display0 = &lcdif;
+};
+
+&{/soc} {
+	u-boot,dm-pre-reloc;
+};
+
+&aips2 {
+	u-boot,dm-pre-reloc;
+};
+
+&iomuxc {
+	u-boot,dm-pre-reloc;
+};
+
+&uart1 {
+	u-boot,dm-pre-reloc;
+};
