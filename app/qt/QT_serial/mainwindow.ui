@@ -19,7 +19,7 @@
      <rect>
       <x>4</x>
       <y>290</y>
-      <width>39</width>
+      <width>51</width>
       <height>50</height>
      </rect>
     </property>
@@ -32,7 +32,7 @@
      <rect>
       <x>4</x>
       <y>340</y>
-      <width>39</width>
+      <width>51</width>
       <height>50</height>
      </rect>
     </property>
@@ -45,7 +45,7 @@
      <rect>
       <x>4</x>
       <y>400</y>
-      <width>39</width>
+      <width>51</width>
       <height>50</height>
      </rect>
     </property>
@@ -58,7 +58,7 @@
      <rect>
       <x>4</x>
       <y>450</y>
-      <width>39</width>
+      <width>51</width>
       <height>50</height>
      </rect>
     </property>
@@ -71,7 +71,7 @@
      <rect>
       <x>4</x>
       <y>500</y>
-      <width>39</width>
+      <width>51</width>
       <height>50</height>
      </rect>
     </property>
@@ -199,7 +199,7 @@
    <widget class="QLabel" name="salve_01_ch01_vol">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>60</x>
       <y>290</y>
       <width>85</width>
       <height>50</height>
@@ -209,7 +209,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>251.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -218,9 +218,9 @@
    <widget class="QLabel" name="salve_01_ch01_cur">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>154</x>
       <y>290</y>
-      <width>85</width>
+      <width>81</width>
       <height>50</height>
      </rect>
     </property>
@@ -228,7 +228,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -237,9 +237,9 @@
    <widget class="QLabel" name="label_45">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>608</x>
       <y>240</y>
-      <width>39</width>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
@@ -250,9 +250,9 @@
    <widget class="QLabel" name="label_46">
     <property name="geometry">
      <rect>
-      <x>690</x>
+      <x>678</x>
       <y>240</y>
-      <width>39</width>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
@@ -263,9 +263,9 @@
    <widget class="QLabel" name="label_47">
     <property name="geometry">
      <rect>
-      <x>760</x>
+      <x>748</x>
       <y>240</y>
-      <width>39</width>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
@@ -276,9 +276,9 @@
    <widget class="QLabel" name="label_48">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>818</x>
       <y>240</y>
-      <width>39</width>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
@@ -289,9 +289,9 @@
    <widget class="QLabel" name="label_49">
     <property name="geometry">
      <rect>
-      <x>900</x>
+      <x>888</x>
       <y>240</y>
-      <width>39</width>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
@@ -302,9 +302,9 @@
    <widget class="QLabel" name="label_50">
     <property name="geometry">
      <rect>
-      <x>970</x>
+      <x>958</x>
       <y>240</y>
-      <width>39</width>
+      <width>51</width>
       <height>23</height>
      </rect>
     </property>
@@ -806,7 +806,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -825,7 +825,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -844,7 +844,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -863,7 +863,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -872,7 +872,7 @@
    <widget class="QLabel" name="salve_02_ch01_vol">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>60</x>
       <y>340</y>
       <width>85</width>
       <height>50</height>
@@ -882,7 +882,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -901,7 +901,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -920,7 +920,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -929,9 +929,9 @@
    <widget class="QLabel" name="salve_02_ch01_cur">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>154</x>
       <y>340</y>
-      <width>85</width>
+      <width>81</width>
       <height>50</height>
      </rect>
     </property>
@@ -939,7 +939,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -958,7 +958,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -977,7 +977,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -986,7 +986,7 @@
    <widget class="QLabel" name="salve_03_ch01_vol">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>60</x>
       <y>400</y>
       <width>85</width>
       <height>50</height>
@@ -996,7 +996,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>012.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1015,7 +1015,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1034,7 +1034,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1043,9 +1043,9 @@
    <widget class="QLabel" name="salve_03_ch01_cur">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>154</x>
       <y>400</y>
-      <width>85</width>
+      <width>81</width>
       <height>50</height>
      </rect>
     </property>
@@ -1053,7 +1053,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>012.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1072,7 +1072,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1091,7 +1091,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1100,7 +1100,7 @@
    <widget class="QLabel" name="salve_04_ch01_vol">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>60</x>
       <y>450</y>
       <width>85</width>
       <height>50</height>
@@ -1110,7 +1110,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1129,7 +1129,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1148,7 +1148,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1157,9 +1157,9 @@
    <widget class="QLabel" name="salve_04_ch01_cur">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>154</x>
       <y>450</y>
-      <width>85</width>
+      <width>81</width>
       <height>50</height>
      </rect>
     </property>
@@ -1167,7 +1167,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>210.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1186,7 +1186,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1205,7 +1205,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1214,7 +1214,7 @@
    <widget class="QLabel" name="salve_05_ch01_vol">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>60</x>
       <y>500</y>
       <width>85</width>
       <height>50</height>
@@ -1224,7 +1224,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1243,7 +1243,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.0V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1262,7 +1262,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1281,7 +1281,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>360.0A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1300,7 +1300,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000V</string>
+     <string>000V</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1319,7 +1319,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>000.000A</string>
+     <string>000A</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1328,9 +1328,9 @@
    <widget class="Line" name="line_7">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>253</x>
       <y>200</y>
-      <width>20</width>
+      <width>2</width>
       <height>351</height>
      </rect>
     </property>
@@ -1406,9 +1406,9 @@
    <widget class="Line" name="line_13">
     <property name="geometry">
      <rect>
-      <x>48</x>
+      <x>58</x>
       <y>250</y>
-      <width>551</width>
+      <width>541</width>
       <height>20</height>
      </rect>
     </property>
@@ -1419,9 +1419,9 @@
    <widget class="Line" name="line_14">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>55</x>
       <y>200</y>
-      <width>20</width>
+      <width>2</width>
       <height>351</height>
      </rect>
     </property>

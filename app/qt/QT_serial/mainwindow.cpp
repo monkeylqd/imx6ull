@@ -12,6 +12,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+//    m_id = 0;
+    memset(&m_ctl_value, 0, sizeof(m_ctl_value));
+    memset(&m_CH_value, 0, sizeof(m_CH_value));
+
     m_buttonList.append(ui->salve_01_ctr01);
     m_buttonList.append(ui->salve_01_ctr02);
     m_buttonList.append(ui->salve_01_ctr03);
@@ -131,6 +135,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_serial_power_communication, SIGNAL(readyRead()), this, SLOT(read_serial_power_communication()));
 
 
+    m_comm_send_timer = new QTimer(this);
+    connect(m_comm_send_timer, SIGNAL(timeout()), this, SLOT(on_comm_send_timeout()));
+    m_comm_send_timer->start(10000);
+
     m_timer = new QTimer(this);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(on_timeout()));
     m_timer->start(1000);
@@ -141,6 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_slave_timer = new QTimer(this);
     connect(m_slave_timer, SIGNAL(timeout()), this, SLOT(on_slave_timeout()));
     m_slave_timer->start(3000);
+//    m_salve_name_LabelList.at(m_id)->setStyleSheet("background-color: green;");
 
     // 发送查找ID的命令
 //    m_serial_power_communication->writeData((const char *)("AT+ADDR?\r\n"), 10);
@@ -158,13 +167,15 @@ void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
     QString input = test1.split("\r\n").first();
     // 使用"|"分割字符串并去除空项
     QStringList parts = input.split("|", QString::SkipEmptyParts);
-    for(int i = 0; i < parts.size(); i++)
-    {
-        qDebug()<<parts[i];
-    }
+//    for(int i = 0; i < parts.size(); i++)
+//    {
+//        qDebug()<<parts[i];
+//    }
+    qDebug()<<parts[0];
+    qDebug()<<parts[1];
 
-    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(parts[0]);
-    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(parts[1]);
+//    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(parts[0]);
+//    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(parts[1]);
 
     // 确保有6个部分
 //    if (parts.size() != 6) {
@@ -229,14 +240,21 @@ void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
     // 打印解析结果
     for(int i = 0; i < measurements.size(); i++)
     {
-        m_CH_value[index_ch][i] = measurements.at(i).value;
+        m_CH_value[index_ch][i] = (int)measurements.at(i).value;
     }
     qDebug()<<m_CH_value[index_ch][0]<<" "<<m_CH_value[index_ch][1]<<" "<<m_CH_value[index_ch][2]<<" "<<m_CH_value[index_ch][3]<<" "<<m_CH_value[index_ch][4]<<" "<<m_CH_value[index_ch][5];
 #endif
     for (const auto &m : measurements) {
         qDebug() << m.name << ":" << m.value << m.unit;
     }
-
+    static int temp_value = 1;
+    if(temp_value >= 999)
+    {
+        temp_value = 1;
+    }
+    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(QString::number(m_CH_value[index_ch][0]+temp_value)+"V");
+    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(QString::number(m_CH_value[index_ch][1]+temp_value)+"A");
+    temp_value += temp_value;
 }
 // COMM接收的数据类型有：
 // +ADDR=000000000001
@@ -248,8 +266,8 @@ int MainWindow::parse_comm_data(QString str)
     bool ok;
     qint64 rev_id = 0;
     qint64 rev_len = 0;
-    float vol_cur[6];
-    char ctl_buff[5];
+    int vol_cur[6];
+    int ctl_buff[5];
     memset(ctl_buff, 0, sizeof(ctl_buff));
     if(str.contains("+ADDR="))
     {
@@ -258,7 +276,9 @@ int MainWindow::parse_comm_data(QString str)
         {
             m_ID = parts[1];
             m_id = parts[1].toLongLong(&ok, 16);
+            m_id = m_id -1;
             qDebug()<<"m_ID:"<<m_ID;
+            qDebug()<<"m_id:"<<m_id;
             m_salve_name_LabelList.at(m_id)->setStyleSheet("background-color: green;");
         }
     }
@@ -276,6 +296,7 @@ int MainWindow::parse_comm_data(QString str)
         {
             qDebug()<<"change ID to Hex fail.";
         }
+        rev_id = rev_id-1;//计算得到真实的ID
 
         // 解析设备发送的数据长度
         rev_len = parts[2].toLongLong(&ok, 16);
@@ -283,6 +304,7 @@ int MainWindow::parse_comm_data(QString str)
         {
             qDebug()<<"change Len to Hex fail.";
         }
+        qDebug()<<"rev_len:"<<rev_len;
 
         // 解析设备的数据
         QByteArray rev_data = parts[3].toUtf8();
@@ -290,61 +312,33 @@ int MainWindow::parse_comm_data(QString str)
         if(check_data(charPtr, rev_len) != 0)
         {
             qDebug()<<"rev data check fail.";
-            return -1;
+//            return -1;
         }
+        printf("charPtr=%s\n",charPtr);
 
-        // 复制出电压、电流数据
-        memcpy(&vol_cur, &charPtr[1], 24);
 
-        // 复制出开关信息
-        memcpy(&ctl_buff, &charPtr[25], 5);
+        // 计算出电压、电流数据
+        for(int i = 0; i < 6; i++)
+        {
+            vol_cur[i] = (charPtr[i*3+1]-'0')*100 + (charPtr[i*3+2]-'0')*10 + (charPtr[i*3+3]-'0');
+        }
+        printf("vol:%d %d %d %d %d %d\n", vol_cur[0], vol_cur[1], vol_cur[2], vol_cur[3], vol_cur[4], vol_cur[5]);
+
+        // 计算出开关信息
+        for(int i = 0; i < 5; i++)
+        {
+            ctl_buff[i] = (charPtr[(i+6)*3+1]-'0')*100 + (charPtr[(i+6)*3+2]-'0')*10 + (charPtr[(i+6)*3+3]-'0');
+        }
+        printf("ctl:%d %d %d %d %d\n", ctl_buff[0], ctl_buff[1], ctl_buff[2], ctl_buff[3], ctl_buff[4]);
 
         // 更新UI的电压电流信息
-        if(rev_id == 1)
-        {
-            ui->salve_01_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-            ui->salve_01_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-            ui->salve_01_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-            ui->salve_01_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-            ui->salve_01_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-            ui->salve_01_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-        }
-        else if(rev_id == 2)
-        {
-            ui->salve_02_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-            ui->salve_02_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-            ui->salve_02_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-            ui->salve_02_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-            ui->salve_02_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-            ui->salve_02_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-        }
-        else if(rev_id == 3)
-        {
-            ui->salve_03_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-            ui->salve_03_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-            ui->salve_03_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-            ui->salve_03_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-            ui->salve_03_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-            ui->salve_03_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-        }
-        else if(rev_id == 4)
-        {
-            ui->salve_04_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-            ui->salve_04_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-            ui->salve_04_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-            ui->salve_04_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-            ui->salve_04_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-            ui->salve_04_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-        }
-        else if(rev_id == 5)
-        {
-            ui->salve_05_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-            ui->salve_05_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-            ui->salve_05_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-            ui->salve_05_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-            ui->salve_05_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-            ui->salve_05_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-        }
+        m_vol_cur_LabelList.at(6*(rev_id-1)+0)->setText(QLocale().toString(vol_cur[0]) + "V");
+        m_vol_cur_LabelList.at(6*(rev_id-1)+2)->setText(QLocale().toString(vol_cur[2]) + "V");
+        m_vol_cur_LabelList.at(6*(rev_id-1)+4)->setText(QLocale().toString(vol_cur[4]) + "V");
+
+        m_vol_cur_LabelList.at(6*(rev_id-1)+1)->setText(QLocale().toString(vol_cur[1]) + "A");
+        m_vol_cur_LabelList.at(6*(rev_id-1)+3)->setText(QLocale().toString(vol_cur[3]) + "A");
+        m_vol_cur_LabelList.at(6*(rev_id-1)+5)->setText(QLocale().toString(vol_cur[5]) + "A");
 
         // 比较开关信息，并更新UI
         if(m_ctl_value[m_id] != ctl_buff[m_id])
@@ -358,6 +352,32 @@ int MainWindow::parse_comm_data(QString str)
             {
                 continue;
             }
+            qDebug()<<"a:"<<m_ctl_value[i]<<"b:"<<ctl_buff[i];
+            m_ctl_value[i] = ctl_buff[i];
+            for(int j = 0; j < 6; j++)
+            {
+                if((m_ctl_value[i] & (1<<j)) == 0)
+                {
+                    qDebug()<<"i:"<<i<<"j:"<<j<<"value:"<<m_ctl_value[i];
+                    m_buttonList.at(i*6+j)->setText("关");
+                }
+                else
+                {
+                    qDebug()<<"i:"<<i<<"j:"<<j<<"value:"<<m_ctl_value[i];
+                    m_buttonList.at(i*6+j)->setText("开");
+                    qDebug()<<"on:"<<i*6+j;
+                }
+            }
+        }
+        m_comm_send_timer->stop();
+        m_comm_send_timer->start((rev_id-m_id-1)*1000+20);
+        if(rev_id > m_id)
+        {
+            m_comm_send_timer->start((rev_id-m_id-1)*1000+20);
+        }
+        else
+        {
+            m_comm_send_timer->start((5-(m_id-rev_id)-1)*1000+20);
         }
 
     }
@@ -428,6 +448,30 @@ void MainWindow::on_timeout()
     m_serial_vol_curr_CH02->write(">>GetVal");
     m_serial_vol_curr_CH03->write(">>GetVal");
     m_timer->start(2000);
+
+}
+
+void MainWindow::on_comm_send_timeout()
+{
+    QString str1="AT+TX=FFFFFFFFFFFF,0023,";
+    QString str2=str1+"A";
+    QString str3=str2+QString("%1").arg(m_CH_value[0][0], 3, 10, QChar('0'));
+    QString str4=str3+QString("%1").arg(m_CH_value[0][1], 3, 10, QChar('0'));
+    QString str5=str4+QString("%1").arg(m_CH_value[1][0], 3, 10, QChar('0'));
+    QString str6=str5+QString("%1").arg(m_CH_value[1][1], 3, 10, QChar('0'));
+    QString str7=str6+QString("%1").arg(m_CH_value[2][0], 3, 10, QChar('0'));
+    QString str8=str7+QString("%1").arg(m_CH_value[2][1], 3, 10, QChar('0'));
+    QString str9=str8+QString("%1").arg(m_ctl_value[0], 3, 10, QChar('0'));
+    QString str10=str9+QString("%1").arg(m_ctl_value[1], 3, 10, QChar('0'));
+    QString str11=str10+QString("%1").arg(m_ctl_value[2], 3, 10, QChar('0'));
+    QString str12=str11+QString("%1").arg(m_ctl_value[3], 3, 10, QChar('0'));
+    QString str13=str12+QString("%1").arg(m_ctl_value[4], 3, 10, QChar('0'));
+    QString str14=str13+"5";
+    QString str15=str14+"\r\n";
+    QByteArray byteArray = str15.toUtf8();
+    m_serial_power_communication->write(byteArray);
+    m_comm_send_timer->stop();
+    m_comm_send_timer->start((5-1)*1000+20);
 
 }
 

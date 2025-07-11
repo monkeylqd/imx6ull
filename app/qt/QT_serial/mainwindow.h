@@ -54,12 +54,13 @@ public:
     QTimer *m_timer;
     QTimer *m_master_timer;
     QTimer *m_slave_timer;
+    QTimer *m_comm_send_timer;
 
-    float m_CH_value[3][6];     // 保持3路通道的电流电压值
-    char m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
+    int m_CH_value[3][6];       // 保持3路通道的电流电压值
+    int m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
 
     QString m_ID;                // 设备ID，8个字节
-    quint64 m_id;
+    qint64 m_id;
     QList<QString> m_dev_list;
     int m_device_type;                          // 设备类型，主机还是从机
     int m_comm_rev_flag;                        // 电力载波通信接口是否有收到数据的flag
@@ -85,6 +86,7 @@ private slots:
 
 
     void on_timeout();
+    void on_comm_send_timeout();
     void on_master_timeout();
     void on_slave_timeout();
 
