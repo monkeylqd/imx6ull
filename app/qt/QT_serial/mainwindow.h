@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QPushButton>
+#include <QLabel>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QString>
@@ -46,12 +48,15 @@ public:
     ~MainWindow();
 
 public:
+    QList<QPushButton*> m_buttonList;
+    QList<QLabel*> m_vol_cur_LabelList;
+    QList<QLabel*> m_salve_name_LabelList;
     QTimer *m_timer;
     QTimer *m_master_timer;
     QTimer *m_slave_timer;
 
     float m_CH_value[3][6];     // 保持3路通道的电流电压值
-    char m_ctl_value[5];
+    char m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
 
     QString m_ID;                // 设备ID，8个字节
     quint64 m_id;

@@ -12,6 +12,81 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_buttonList.append(ui->salve_01_ctr01);
+    m_buttonList.append(ui->salve_01_ctr02);
+    m_buttonList.append(ui->salve_01_ctr03);
+    m_buttonList.append(ui->salve_01_ctr04);
+    m_buttonList.append(ui->salve_01_ctr05);
+    m_buttonList.append(ui->salve_01_ctr06);
+
+    m_buttonList.append(ui->salve_02_ctr01);
+    m_buttonList.append(ui->salve_02_ctr02);
+    m_buttonList.append(ui->salve_02_ctr03);
+    m_buttonList.append(ui->salve_02_ctr04);
+    m_buttonList.append(ui->salve_02_ctr05);
+    m_buttonList.append(ui->salve_02_ctr06);
+
+    m_buttonList.append(ui->salve_03_ctr01);
+    m_buttonList.append(ui->salve_03_ctr02);
+    m_buttonList.append(ui->salve_03_ctr03);
+    m_buttonList.append(ui->salve_03_ctr04);
+    m_buttonList.append(ui->salve_03_ctr05);
+    m_buttonList.append(ui->salve_03_ctr06);
+
+    m_buttonList.append(ui->salve_04_ctr01);
+    m_buttonList.append(ui->salve_04_ctr02);
+    m_buttonList.append(ui->salve_04_ctr03);
+    m_buttonList.append(ui->salve_04_ctr04);
+    m_buttonList.append(ui->salve_04_ctr05);
+    m_buttonList.append(ui->salve_04_ctr06);
+
+    m_buttonList.append(ui->salve_05_ctr01);
+    m_buttonList.append(ui->salve_05_ctr02);
+    m_buttonList.append(ui->salve_05_ctr03);
+    m_buttonList.append(ui->salve_05_ctr04);
+    m_buttonList.append(ui->salve_05_ctr05);
+    m_buttonList.append(ui->salve_05_ctr06);
+
+    m_vol_cur_LabelList.append(ui->salve_01_ch01_vol);
+    m_vol_cur_LabelList.append(ui->salve_01_ch01_cur);
+    m_vol_cur_LabelList.append(ui->salve_01_ch02_vol);
+    m_vol_cur_LabelList.append(ui->salve_01_ch02_cur);
+    m_vol_cur_LabelList.append(ui->salve_01_ch03_vol);
+    m_vol_cur_LabelList.append(ui->salve_01_ch03_cur);
+
+    m_vol_cur_LabelList.append(ui->salve_02_ch01_vol);
+    m_vol_cur_LabelList.append(ui->salve_02_ch01_cur);
+    m_vol_cur_LabelList.append(ui->salve_02_ch02_vol);
+    m_vol_cur_LabelList.append(ui->salve_02_ch02_cur);
+    m_vol_cur_LabelList.append(ui->salve_02_ch03_vol);
+    m_vol_cur_LabelList.append(ui->salve_02_ch03_cur);
+
+    m_vol_cur_LabelList.append(ui->salve_03_ch01_vol);
+    m_vol_cur_LabelList.append(ui->salve_03_ch01_cur);
+    m_vol_cur_LabelList.append(ui->salve_03_ch02_vol);
+    m_vol_cur_LabelList.append(ui->salve_03_ch02_cur);
+    m_vol_cur_LabelList.append(ui->salve_03_ch03_vol);
+    m_vol_cur_LabelList.append(ui->salve_03_ch03_cur);
+
+    m_vol_cur_LabelList.append(ui->salve_04_ch01_vol);
+    m_vol_cur_LabelList.append(ui->salve_04_ch01_cur);
+    m_vol_cur_LabelList.append(ui->salve_04_ch02_vol);
+    m_vol_cur_LabelList.append(ui->salve_04_ch02_cur);
+    m_vol_cur_LabelList.append(ui->salve_04_ch03_vol);
+    m_vol_cur_LabelList.append(ui->salve_04_ch03_cur);
+
+    m_vol_cur_LabelList.append(ui->salve_05_ch01_vol);
+    m_vol_cur_LabelList.append(ui->salve_05_ch01_cur);
+    m_vol_cur_LabelList.append(ui->salve_05_ch02_vol);
+    m_vol_cur_LabelList.append(ui->salve_05_ch02_cur);
+    m_vol_cur_LabelList.append(ui->salve_05_ch03_vol);
+    m_vol_cur_LabelList.append(ui->salve_05_ch03_cur);
+
+    m_salve_name_LabelList.append(ui->slave01);
+    m_salve_name_LabelList.append(ui->slave02);
+    m_salve_name_LabelList.append(ui->slave03);
+    m_salve_name_LabelList.append(ui->slave04);
+    m_salve_name_LabelList.append(ui->slave05);
 
     m_comm_rev_flag = 0; //初始化flag标志
     m_serial_vol_curr_CH01 = new QSerialPort();
@@ -88,111 +163,8 @@ void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
         qDebug()<<parts[i];
     }
 
-    if((m_id == 1) && (index_ch == 0))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_01_ch01_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_01_ch01_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 1) && (index_ch == 1))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_01_ch02_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_01_ch02_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 1) && (index_ch == 2))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_01_ch03_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_01_ch03_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 2) && (index_ch == 0))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_02_ch01_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_02_ch01_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 2) && (index_ch == 1))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_02_ch02_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_02_ch02_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 2) && (index_ch == 2))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_02_ch03_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_02_ch03_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 3) && (index_ch == 0))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_03_ch01_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_03_ch01_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 3) && (index_ch == 1))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_03_ch02_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_03_ch02_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 3) && (index_ch == 2))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_03_ch03_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_03_ch03_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 4) && (index_ch == 0))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_04_ch01_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_04_ch01_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 4) && (index_ch == 1))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_04_ch02_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_04_ch02_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 4) && (index_ch == 2))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_04_ch03_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_04_ch03_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 5) && (index_ch == 0))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_05_ch01_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_05_ch01_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 5) && (index_ch == 1))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_05_ch02_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_05_ch02_cur->setText(cur_list[1]);
-    }
-    else if((m_id == 5) && (index_ch == 2))
-    {
-        QStringList vol_list = parts[0].split(":", QString::SkipEmptyParts);
-        ui->salve_05_ch03_vol->setText(vol_list[1]);
-        QStringList cur_list = parts[1].split(":", QString::SkipEmptyParts);
-        ui->salve_05_ch03_cur->setText(cur_list[1]);
-    }
+    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(parts[0]);
+    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(parts[1]);
 
     // 确保有6个部分
 //    if (parts.size() != 6) {
@@ -277,6 +249,8 @@ int MainWindow::parse_comm_data(QString str)
     qint64 rev_id = 0;
     qint64 rev_len = 0;
     float vol_cur[6];
+    char ctl_buff[5];
+    memset(ctl_buff, 0, sizeof(ctl_buff));
     if(str.contains("+ADDR="))
     {
         QStringList parts = str.split("=");
@@ -285,6 +259,7 @@ int MainWindow::parse_comm_data(QString str)
             m_ID = parts[1];
             m_id = parts[1].toLongLong(&ok, 16);
             qDebug()<<"m_ID:"<<m_ID;
+            m_salve_name_LabelList.at(m_id)->setStyleSheet("background-color: green;");
         }
     }
     else if(str.contains("+RX="))
@@ -296,17 +271,6 @@ int MainWindow::parse_comm_data(QString str)
             return -1;
         }
 
-        QStringList temp = parts[0].split("=");
-        if(temp[1].contains("00"))
-        {
-            // 00-点对点通信，需要回复    01-广播通信，不需要回复
-        }
-
-        // 解析设备ID，通过ID确认设备是否已经记录
-        if(! m_dev_list.contains(parts[1]))
-        {
-            m_dev_list.append(parts[1]);
-        }
         rev_id = parts[1].toLongLong(&ok, 16);
         if(!ok)
         {
@@ -329,61 +293,71 @@ int MainWindow::parse_comm_data(QString str)
             return -1;
         }
 
-        // 收到的数据是常规数据
-        if(DATA_IS_DATA == charPtr[1])
+        // 复制出电压、电流数据
+        memcpy(&vol_cur, &charPtr[1], 24);
+
+        // 复制出开关信息
+        memcpy(&ctl_buff, &charPtr[25], 5);
+
+        // 更新UI的电压电流信息
+        if(rev_id == 1)
         {
-            memcpy(&vol_cur, &charPtr[2], 24);
-            memcpy(&m_ctl_value, &charPtr[26], 5);
-            if(rev_id == 1)
-            {
-                ui->salve_01_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-                ui->salve_01_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-                ui->salve_01_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-                ui->salve_01_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-                ui->salve_01_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-                ui->salve_01_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-            }
-            else if(rev_id == 2)
-            {
-                ui->salve_02_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-                ui->salve_02_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-                ui->salve_02_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-                ui->salve_02_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-                ui->salve_02_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-                ui->salve_02_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-            }
-            else if(rev_id == 3)
-            {
-                ui->salve_03_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-                ui->salve_03_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-                ui->salve_03_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-                ui->salve_03_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-                ui->salve_03_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-                ui->salve_03_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-            }
-            else if(rev_id == 4)
-            {
-                ui->salve_04_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-                ui->salve_04_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-                ui->salve_04_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-                ui->salve_04_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-                ui->salve_04_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-                ui->salve_04_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-            }
-            else if(rev_id == 5)
-            {
-                ui->salve_05_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
-                ui->salve_05_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
-                ui->salve_05_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
-                ui->salve_05_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
-                ui->salve_05_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
-                ui->salve_05_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
-            }
+            ui->salve_01_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
+            ui->salve_01_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
+            ui->salve_01_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
+            ui->salve_01_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
+            ui->salve_01_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
+            ui->salve_01_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
         }
-        else if(DATA_IS_MASTER == charPtr[1])
+        else if(rev_id == 2)
         {
-            // 收到竞选master的消息
-            qDebug()<<rev_id<<" campaign";
+            ui->salve_02_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
+            ui->salve_02_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
+            ui->salve_02_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
+            ui->salve_02_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
+            ui->salve_02_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
+            ui->salve_02_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
+        }
+        else if(rev_id == 3)
+        {
+            ui->salve_03_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
+            ui->salve_03_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
+            ui->salve_03_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
+            ui->salve_03_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
+            ui->salve_03_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
+            ui->salve_03_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
+        }
+        else if(rev_id == 4)
+        {
+            ui->salve_04_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
+            ui->salve_04_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
+            ui->salve_04_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
+            ui->salve_04_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
+            ui->salve_04_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
+            ui->salve_04_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
+        }
+        else if(rev_id == 5)
+        {
+            ui->salve_05_ch01_vol->setText(QLocale().toString(vol_cur[0]) + "V");
+            ui->salve_05_ch02_vol->setText(QLocale().toString(vol_cur[2]) + "V");
+            ui->salve_05_ch03_vol->setText(QLocale().toString(vol_cur[4]) + "V");
+            ui->salve_05_ch01_cur->setText(QLocale().toString(vol_cur[1]) + "A");
+            ui->salve_05_ch02_cur->setText(QLocale().toString(vol_cur[3]) + "A");
+            ui->salve_05_ch03_cur->setText(QLocale().toString(vol_cur[5]) + "A");
+        }
+
+        // 比较开关信息，并更新UI
+        if(m_ctl_value[m_id] != ctl_buff[m_id])
+        {
+            // 控制GPIO输出
+        }
+
+        for(int i = 0; i < 5; i++)
+        {
+            if(m_ctl_value[i] == ctl_buff[i])
+            {
+                continue;
+            }
         }
 
     }
@@ -406,7 +380,7 @@ int MainWindow::check_data(const char *data, int len)
     return -1;
 }
 
-
+// | Vrms:   0.00000V | Irms:   0.00000A | P:   0.0000W | PF: 0.00000 | F:  0.0000Hz | W:   0.0051KW*H |
 void MainWindow::read_serial_vol_curr_CH01()
 {
     QByteArray read_buff;
@@ -442,6 +416,7 @@ void MainWindow::read_serial_power_communication()
     m_comm_rev_flag = 1;        // 电力载波通信有收到数据
     read_buff = m_serial_power_communication->readAll();
     qDebug("COMM read:%s\n", qPrintable(QString(read_buff)));
+    parse_comm_data(QString(read_buff));
 }
 
 void MainWindow::on_timeout()
