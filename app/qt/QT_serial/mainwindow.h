@@ -9,6 +9,7 @@
 #include <QString>
 #include <QTimer>
 #include <QDebug>
+#include <QProcess>
 
 #include <QStringList>
 #include <QRegularExpression>
@@ -33,6 +34,12 @@ enum REV_DATA_TYPE
     DATA_IS_DATA = 2,
 };
 
+enum ENUM_TYPE
+{
+    ENUM_TYPE_OUT = 0,
+    ENUM_TYPE_IN = 1,
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -55,9 +62,11 @@ public:
     QTimer *m_master_timer;
     QTimer *m_slave_timer;
     QTimer *m_comm_send_timer;
+    QStringList m_ctl_cmd;
 
     int m_CH_value[3][6];       // 保持3路通道的电流电压值
     int m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
+    int m_click_flag[5];
 
     QString m_ID;                // 设备ID，8个字节
     qint64 m_id;
@@ -76,6 +85,8 @@ public:
     void parse_vol_cur_data(int index_salve, QString inputs);     // 解析电压、电流的串口数据
     int parse_comm_data(QString str);
     int check_data(const char *data, int len);
+    int run_ctl_cmd(int dir, int index, int value);
+    int up_ctl_status(void);
 
 private slots:
 

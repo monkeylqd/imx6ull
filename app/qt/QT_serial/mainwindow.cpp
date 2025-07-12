@@ -15,6 +15,29 @@ MainWindow::MainWindow(QWidget *parent)
 //    m_id = 0;
     memset(&m_ctl_value, 0, sizeof(m_ctl_value));
     memset(&m_CH_value, 0, sizeof(m_CH_value));
+    memset(&m_click_flag, 0, sizeof(m_click_flag));
+
+    m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio3/value");
+    m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio115/value");
+    m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio26/value");
+    m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio27/value");
+    m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio22/value");
+    m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio23/value");
+
+    m_ctl_cmd.append("echo 0 > /sys/class/gpio/gpio3/value");
+    m_ctl_cmd.append("echo 0 > /sys/class/gpio/gpio115/value");
+    m_ctl_cmd.append("echo 0 > /sys/class/gpio/gpio26/value");
+    m_ctl_cmd.append("echo 0 > /sys/class/gpio/gpio27/value");
+    m_ctl_cmd.append("echo 0 > /sys/class/gpio/gpio22/value");
+    m_ctl_cmd.append("echo 0 > /sys/class/gpio/gpio23/value");
+
+
+    m_ctl_cmd.append("cat /sys/class/gpio/gpio123/value");
+    m_ctl_cmd.append("cat /sys/class/gpio/gpio124/value");
+    m_ctl_cmd.append("cat /sys/class/gpio/gpio121/value");
+    m_ctl_cmd.append("cat /sys/class/gpio/gpio119/value");
+    m_ctl_cmd.append("cat /sys/class/gpio/gpio120/value");
+    m_ctl_cmd.append("cat /sys/class/gpio/gpio116/value");
 
     m_buttonList.append(ui->salve_01_ctr01);
     m_buttonList.append(ui->salve_01_ctr02);
@@ -266,6 +289,7 @@ int MainWindow::parse_comm_data(QString str)
     bool ok;
     qint64 rev_id = 0;
     qint64 rev_len = 0;
+    int ret = 0;
     int vol_cur[6];
     int ctl_buff[5];
     memset(ctl_buff, 0, sizeof(ctl_buff));
@@ -297,6 +321,7 @@ int MainWindow::parse_comm_data(QString str)
             qDebug()<<"change ID to Hex fail.";
         }
         rev_id = rev_id-1;//计算得到真实的ID
+        qDebug()<<"rev_id:"<<rev_id;
 
         // 解析设备发送的数据长度
         rev_len = parts[2].toLongLong(&ok, 16);
@@ -332,45 +357,34 @@ int MainWindow::parse_comm_data(QString str)
         printf("ctl:%d %d %d %d %d\n", ctl_buff[0], ctl_buff[1], ctl_buff[2], ctl_buff[3], ctl_buff[4]);
 
         // 更新UI的电压电流信息
-        m_vol_cur_LabelList.at(6*(rev_id-1)+0)->setText(QLocale().toString(vol_cur[0]) + "V");
-        m_vol_cur_LabelList.at(6*(rev_id-1)+2)->setText(QLocale().toString(vol_cur[2]) + "V");
-        m_vol_cur_LabelList.at(6*(rev_id-1)+4)->setText(QLocale().toString(vol_cur[4]) + "V");
+        m_vol_cur_LabelList.at(6*(rev_id)+0)->setText(QLocale().toString(vol_cur[0]) + "V");
+        m_vol_cur_LabelList.at(6*(rev_id)+2)->setText(QLocale().toString(vol_cur[2]) + "V");
+        m_vol_cur_LabelList.at(6*(rev_id)+4)->setText(QLocale().toString(vol_cur[4]) + "V");
 
-        m_vol_cur_LabelList.at(6*(rev_id-1)+1)->setText(QLocale().toString(vol_cur[1]) + "A");
-        m_vol_cur_LabelList.at(6*(rev_id-1)+3)->setText(QLocale().toString(vol_cur[3]) + "A");
-        m_vol_cur_LabelList.at(6*(rev_id-1)+5)->setText(QLocale().toString(vol_cur[5]) + "A");
+        m_vol_cur_LabelList.at(6*(rev_id)+1)->setText(QLocale().toString(vol_cur[1]) + "A");
+        m_vol_cur_LabelList.at(6*(rev_id)+3)->setText(QLocale().toString(vol_cur[3]) + "A");
+        m_vol_cur_LabelList.at(6*(rev_id)+5)->setText(QLocale().toString(vol_cur[5]) + "A");
 
-        // 比较开关信息，并更新UI
-        if(m_ctl_value[m_id] != ctl_buff[m_id])
-        {
-            // 控制GPIO输出
-        }
-
+        // 比较开关信息，并更新开关信息
         for(int i = 0; i < 5; i++)
         {
-            if(m_ctl_value[i] == ctl_buff[i])
+            for(int j = 0; j <6; j++)
             {
-                continue;
-            }
-            qDebug()<<"a:"<<m_ctl_value[i]<<"b:"<<ctl_buff[i];
-            m_ctl_value[i] = ctl_buff[i];
-            for(int j = 0; j < 6; j++)
-            {
-                if((m_ctl_value[i] & (1<<j)) == 0)
+                if((((m_ctl_value[i]>>j)&1) == ((ctl_buff[i]>>j)&1)) || (m_click_flag[i]>>j&1))
                 {
-                    qDebug()<<"i:"<<i<<"j:"<<j<<"value:"<<m_ctl_value[i];
-                    m_buttonList.at(i*6+j)->setText("关");
+                    continue;
                 }
-                else
-                {
-                    qDebug()<<"i:"<<i<<"j:"<<j<<"value:"<<m_ctl_value[i];
-                    m_buttonList.at(i*6+j)->setText("开");
-                    qDebug()<<"on:"<<i*6+j;
-                }
+                m_ctl_value[i] &=~(1<<j);
+                m_ctl_value[i] |= ctl_buff[i] & (1<<j);
             }
         }
+        ret = up_ctl_status();
+        if(ret == -1)
+        {
+            qDebug()<<"up_ctl_status fail.";
+        }
         m_comm_send_timer->stop();
-        m_comm_send_timer->start((rev_id-m_id-1)*1000+20);
+//        m_comm_send_timer->start((rev_id-m_id-1)*1000+20);
         if(rev_id > m_id)
         {
             m_comm_send_timer->start((rev_id-m_id-1)*1000+20);
@@ -398,6 +412,122 @@ int MainWindow::check_data(const char *data, int len)
         return 0;
     }
     return -1;
+}
+
+// 不管是设置输出还是读取输入，最后都需要读取输入。
+// 所以return返回的都是读取输入的值(0/1)或者-1
+int MainWindow::run_ctl_cmd(int dir, int index, int value)
+{
+    bool ok;
+    int ret = 0;
+    QProcess process;
+    QProcess process_read;
+    process.start();
+    if(dir == ENUM_TYPE_OUT)
+    {
+        if(value)
+        {
+            process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+0*6));
+            //process.start("bash", QStringList() << "-c" << QString("echo %1 > /sys/class/gpio/gpio%2/value")
+        }
+        else
+        {
+            process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+1*6));
+//            process.start(m_ctl_cmd.at(index+1*6));
+        }
+    }
+    process.waitForFinished();
+    if(process.exitCode() != 0)
+    {
+        qDebug() << "Command failed:" << process.readAllStandardError();
+    }
+    cust_delay(5);
+    qDebug()<<"cmd:"<<m_ctl_cmd.at(index+2*6);
+    process_read.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+2*6));
+    process_read.waitForFinished();
+    if (process_read.exitCode() == 0)
+    {
+        QString result = process_read.readAllStandardOutput();
+        qDebug() << "System info:" << result;
+        ret = result.toInt(&ok);
+        if(ok)
+        {
+            if(dir == ENUM_TYPE_OUT && ret != value)
+            {
+                qDebug("m_id: %lld set ctl: %d to %d fail.\n", m_id, index, value);
+            }
+            return ret;
+        }
+    }
+    else
+    {
+        qDebug() << "read Command failed:" << process_read.readAllStandardError();
+    }
+
+    return -1;
+}
+
+// 更新控制开关按钮的状态
+int MainWindow::up_ctl_status()
+{
+    int ret = 0;
+    // 按位遍历各个开关按钮
+    for(int i = 0; i < 5; i++)
+    {
+        qDebug()<<"value:"<<i<<"="<<m_ctl_value[i];
+        for(int j = 0; j < 6; j++)
+        {
+            // 如果值为开
+            if(m_ctl_value[i]>>j & 1)
+            {
+                // 检测是否为本机配置
+                if(m_id == i)
+                {
+                    // 如果是本机配置，更新GPIO的配置，并确认更新后的值，根据更新后的值更新UI
+                    ret = run_ctl_cmd(ENUM_TYPE_OUT, j, 1);
+                    if(ret == 1)
+                    {
+                        qDebug()<<"1 开";
+                        m_buttonList.at(i*6+j)->setText("开");
+                    }
+                    else
+                    {
+                        qDebug()<<"1 关";
+                        ret = -1;
+                        m_buttonList.at(i*6+j)->setText("关");
+                    }
+                }
+                else
+                {
+                    // 非本机配置，直接更新UI
+                    m_buttonList.at(i*6+j)->setText("开");
+                }
+            }
+            else
+            {
+                if(m_id == i)
+                {
+                    ret = run_ctl_cmd(ENUM_TYPE_OUT, j, 0);
+                    if(ret == 0)
+                    {
+                        qDebug()<<"0 关";
+                        m_buttonList.at(i*6+j)->setText("关");
+                    }
+                    else
+                    {
+                        qDebug()<<"0 开";
+                        ret = -1;
+                        m_buttonList.at(i*6+j)->setText("开");
+                    }
+                }
+                else
+                {
+                    m_buttonList.at(i*6+j)->setText("关");
+                }
+            }
+        }
+    }
+    return ret;
 }
 
 // | Vrms:   0.00000V | Irms:   0.00000A | P:   0.0000W | PF: 0.00000 | F:  0.0000Hz | W:   0.0051KW*H |
@@ -472,7 +602,7 @@ void MainWindow::on_comm_send_timeout()
     m_serial_power_communication->write(byteArray);
     m_comm_send_timer->stop();
     m_comm_send_timer->start((5-1)*1000+20);
-
+    memset(&m_click_flag, 0, sizeof(m_click_flag));
 }
 
 void MainWindow::on_master_timeout()
@@ -490,150 +620,329 @@ void MainWindow::on_slave_timeout()
 
 void MainWindow::on_salve_01_ctr01_clicked()
 {
-
+    qDebug()<<"on_salve_01_ctr01_clicked";
+    m_click_flag[0] = m_click_flag[0] | 1<<0;
+    m_ctl_value[0] ^=1<<0;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_01_ctr01_clicked fail.";
+    }
 }
 
 void MainWindow::on_salve_01_ctr02_clicked()
 {
+    m_click_flag[0] = m_click_flag[0] | 1<<1;
+    m_ctl_value[0] ^=1<<1;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_01_ctr02_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_01_ctr03_clicked()
 {
+    m_click_flag[0] = m_click_flag[0] | 1<<2;
+    m_ctl_value[0] ^=1<<2;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_01_ctr03_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_01_ctr04_clicked()
 {
+    m_click_flag[0] = m_click_flag[0] | 1<<3;
+    m_ctl_value[0] ^=1<<3;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_01_ctr04_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_01_ctr05_clicked()
 {
+    m_click_flag[0] = m_click_flag[0] | 1<<4;
+    m_ctl_value[0] ^=1<<4;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_01_ctr05_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_01_ctr06_clicked()
 {
+    m_click_flag[0] = m_click_flag[0] | 1<<5;
+    m_ctl_value[0] ^=1<<5;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_01_ctr06_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_02_ctr01_clicked()
 {
+    m_click_flag[1] = m_click_flag[1] | 1<<0;
+    m_ctl_value[1] ^=1<<0;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_02_ctr01_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_02_ctr02_clicked()
 {
+    m_click_flag[1] = m_click_flag[1] | 1<<1;
+    m_ctl_value[1] ^=1<<1;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_02_ctr02_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_02_ctr03_clicked()
 {
+    m_click_flag[1] = m_click_flag[1] | 1<<2;
+    m_ctl_value[1] ^=1<<2;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_02_ctr03_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_02_ctr04_clicked()
 {
+    m_click_flag[1] = m_click_flag[1] | 1<<3;
+    m_ctl_value[1] ^=1<<3;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_02_ctr04_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_02_ctr05_clicked()
 {
+    m_click_flag[1] = m_click_flag[1] | 1<<4;
+    m_ctl_value[1] ^=1<<4;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_02_ctr05_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_02_ctr06_clicked()
 {
+    m_click_flag[1] = m_click_flag[1] | 1<<5;
+    m_ctl_value[1] ^=1<<5;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_02_ctr06_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_03_ctr01_clicked()
 {
+    m_click_flag[2] = m_click_flag[2] | 1<<0;
+    m_ctl_value[2] ^=1<<0;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_03_ctr01_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_03_ctr02_clicked()
 {
+    m_click_flag[2] = m_click_flag[2] | 1<<1;
+    m_ctl_value[2] ^=1<<1;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_03_ctr02_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_03_ctr03_clicked()
 {
+    m_click_flag[2] = m_click_flag[2] | 1<<2;
+    m_ctl_value[2] ^=1<<2;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_03_ctr03_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_03_ctr04_clicked()
 {
+    m_click_flag[2] = m_click_flag[2] | 1<<3;
+    m_ctl_value[2] ^=1<<3;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_03_ctr04_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_03_ctr05_clicked()
 {
+    m_click_flag[2] = m_click_flag[2] | 1<<4;
+    m_ctl_value[2] ^=1<<4;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_03_ctr05_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_03_ctr06_clicked()
 {
+    m_click_flag[2] = m_click_flag[2] | 1<<5;
+    m_ctl_value[2] ^=1<<5;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_03_ctr06_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_04_ctr01_clicked()
 {
+    m_click_flag[3] = m_click_flag[3] | 1<<0;
+    m_ctl_value[3] ^=1<<0;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_04_ctr01_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_04_ctr02_clicked()
 {
+    m_click_flag[3] = m_click_flag[3] | 1<<1;
+    m_ctl_value[3] ^=1<<1;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_04_ctr02_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_04_ctr03_clicked()
 {
+    m_click_flag[3] = m_click_flag[3] | 1<<2;
+    m_ctl_value[3] ^=1<<2;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_04_ctr03_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_04_ctr04_clicked()
 {
+    m_click_flag[3] = m_click_flag[3] | 1<<3;
+    m_ctl_value[3] ^=1<<3;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_04_ctr04_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_04_ctr05_clicked()
 {
+    m_click_flag[3] = m_click_flag[3] | 1<<4;
+    m_ctl_value[3] ^=1<<4;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_04_ctr05_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_04_ctr06_clicked()
 {
+    m_click_flag[3] = m_click_flag[3] | 1<<5;
+    m_ctl_value[3] ^=1<<5;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_04_ctr06_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_05_ctr01_clicked()
 {
+    m_click_flag[4] = m_click_flag[4] | 1<<0;
+    m_ctl_value[4] ^=1<<0;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_05_ctr01_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_05_ctr02_clicked()
 {
+    m_click_flag[4] = m_click_flag[4] | 1<<1;
+    m_ctl_value[4] ^=1<<1;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_05_ctr02_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_05_ctr03_clicked()
 {
+    m_click_flag[4] = m_click_flag[4] | 1<<2;
+    m_ctl_value[4] ^=1<<2;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_05_ctr03_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_05_ctr04_clicked()
 {
+    m_click_flag[4] = m_click_flag[4] | 1<<3;
+    m_ctl_value[4] ^=1<<3;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_05_ctr04_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_05_ctr05_clicked()
 {
+    m_click_flag[4] = m_click_flag[4] | 1<<4;
+    m_ctl_value[4] ^=1<<4;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_05_ctr05_clicked fail.";
+    }
 
 }
 
 void MainWindow::on_salve_05_ctr06_clicked()
 {
-
+    m_click_flag[4] = m_click_flag[4] | 1<<5;
+    m_ctl_value[4] ^=1<<5;
+    if(up_ctl_status() == -1)
+    {
+        qDebug()<<"on_salve_05_ctr06_clicked fail.";
+    }
 }
