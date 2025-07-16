@@ -304,6 +304,30 @@ int MainWindow::parse_comm_data(QString str)
             qDebug()<<"m_ID:"<<m_ID;
             qDebug()<<"m_id:"<<m_id;
             m_salve_name_LabelList.at(m_id)->setStyleSheet("background-color: green;");
+            for(int i = 0 ; i < 6; i++)
+            {
+                m_ctl_value[m_id] |= 1 << 7;
+                qDebug()<<"a cmd:"<<m_ctl_cmd.at(i+2*6);
+                QProcess process_read;
+                process_read.start("bash", QStringList() << "-c" << m_ctl_cmd.at(i+2*6));
+                process_read.waitForFinished();
+                if (process_read.exitCode() == 0)
+                {
+                    QString result = process_read.readAllStandardOutput();
+                    qDebug() << "System info:" << result;
+                    ret = result.toInt(&ok);
+                    if(ok)
+                    {
+                        m_ctl_value[m_id] |= ret << i;
+                    }
+                }
+                else
+                {
+                    qDebug() << "read Command failed:" << process_read.readAllStandardError();
+                }
+            }
+            qDebug("m_ctl_value[%d]=%d\n", m_id, m_ctl_value[m_id]);
+            up_ctl_text();
         }
     }
     else if(str.contains("+RX="))
@@ -370,6 +394,14 @@ int MainWindow::parse_comm_data(QString str)
         {
             for(int j = 0; j <6; j++)
             {
+                if((ctl_buff[i]>>7) == 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    m_ctl_value[i] |= 1 << 7;
+                }
                 if((((m_ctl_value[i]>>j)&1) == ((ctl_buff[i]>>j)&1)) || (m_click_flag[i]>>j&1))
                 {
                     continue;
@@ -427,11 +459,19 @@ int MainWindow::run_ctl_cmd(int dir, int index, int value)
     {
         if(value)
         {
+            qDebug()<<"cmd:"<<m_ctl_cmd.at(index+0*6);
             process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+0*6));
+            cust_delay(40);
+            qDebug()<<"cmd:"<<m_ctl_cmd.at(index+1*6);
+            process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+1*6));
             //process.start("bash", QStringList() << "-c" << QString("echo %1 > /sys/class/gpio/gpio%2/value")
         }
         else
         {
+            qDebug()<<"cmd:"<<m_ctl_cmd.at(index+0*6);
+            process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+0*6));
+            cust_delay(40);
+            qDebug()<<"cmd:"<<m_ctl_cmd.at(index+1*6);
             process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+1*6));
 //            process.start(m_ctl_cmd.at(index+1*6));
         }
@@ -441,7 +481,7 @@ int MainWindow::run_ctl_cmd(int dir, int index, int value)
     {
         qDebug() << "Command failed:" << process.readAllStandardError();
     }
-    cust_delay(5);
+    cust_delay(20);
     qDebug()<<"cmd:"<<m_ctl_cmd.at(index+2*6);
     process_read.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+2*6));
     process_read.waitForFinished();
@@ -471,9 +511,181 @@ int MainWindow::run_ctl_cmd(int dir, int index, int value)
 int MainWindow::up_ctl_status()
 {
     int ret = 0;
+    for(int i = 0; i < 5; i++)
+    {
+        if((m_ctl_value[i] >> 7) == 0)
+        {
+            continue;
+        }
+        for(int j = 0; j < 6; j++)
+        {
+            if(m_id == i)
+            {
+                ret = run_ctl_cmd(ENUM_TYPE_OUT, j, 0);
+                if(ret == -1)
+                {
+                    qDebug()<<"run_ctl_cmd fail.";
+                }
+                m_ctl_value[i] &= ~(1<<j);
+                m_ctl_value[i] |= (ret << j);
+            }
+            ret = up_ctl_text();
+        }
+    }
+#if 0
+    int ret = 0;
     // 按位遍历各个开关按钮
     for(int i = 0; i < 5; i++)
     {
+        if((m_ctl_value[i] >> 7) == 0)
+        {
+            continue;
+        }
+        qDebug()<<"value:"<<i<<"="<<m_ctl_value[i];
+        for(int j = 0; j < 6; j++)
+        {
+            if(m_id == i)
+            {
+                ret = run_ctl_cmd(ENUM_TYPE_OUT, j, 1);
+                if(ret == -1)
+                {
+                    qDebug()<<"run_ctl_cmd fail.";
+                }
+                m_ctl_value[i] &= ~(1<<j);
+                m_ctl_value[i] |= (ret << j);
+                if(ret == 0)
+                {
+                    m_buttonList.at(i*6+j)->setText("关");
+                }
+                else
+                {
+                    m_buttonList.at(i*6+j)->setText("开");
+                }
+            }
+            else
+            {
+                if(m_ctl_value[i] & (1<<j))
+                {
+                    m_buttonList.at(i*6+j)->setText("开");
+                }
+                else
+                {
+                    m_buttonList.at(i*6+j)->setText("关");
+                }
+            }
+
+        }
+    }
+#endif
+    return ret;
+}
+
+int MainWindow::up_ctl_text()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if((m_ctl_value[i] >> 7) == 0)
+        {
+            continue;
+        }
+        for(int j = 0; j < 6; j++)
+        {
+            if(m_ctl_value[i] & (1<<j))
+            {
+                m_buttonList.at(i*6+j)->setText("开");
+            }
+            else
+            {
+                m_buttonList.at(i*6+j)->setText("关");
+            }
+        }
+    }
+    return 0;
+}
+
+int MainWindow::tri_ctl(int index)
+{
+
+    bool ok;
+    int ret = 0;
+    QProcess process;
+    qDebug()<<"cmd:"<<m_ctl_cmd.at(index+0*6);
+    process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+0*6));
+    cust_delay(40);
+    qDebug()<<"cmd:"<<m_ctl_cmd.at(index+1*6);
+    process.start("bash", QStringList() << "-c" << m_ctl_cmd.at(index+1*6));
+
+    process.waitForFinished();
+    if(process.exitCode() != 0)
+    {
+        qDebug() << "Command failed:" << process.readAllStandardError();
+    }
+    cust_delay(40);
+    for(int i = 0; i < 6; i++)
+    {
+        QProcess process_read;
+        qDebug()<<"cmd:"<<m_ctl_cmd.at(i+2*6);
+        process_read.start("bash", QStringList() << "-c" << m_ctl_cmd.at(i+2*6));
+        process_read.waitForFinished();
+        if (process_read.exitCode() == 0)
+        {
+            QString result = process_read.readAllStandardOutput();
+            qDebug() << "System info:" << result;
+            ret = result.toInt(&ok);
+            if(ok)
+            {
+                m_ctl_value[m_id] &= ~(1<<i);
+                m_ctl_value[m_id] |= ret<<i;
+                qDebug("m_id: %lld index=%d value=%d.\n", m_id, i, ret);
+            }
+        }
+        else
+        {
+            qDebug() << "read Command failed:" << process_read.readAllStandardError();
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+int MainWindow::button_click(int ch, int index)
+{
+    int ret = 0;
+    if(ch == m_id)
+    {
+        ret = tri_ctl(index);
+        if(ret == -1)
+        {
+            qDebug()<<"tri_ctl fail";
+        }
+        qDebug("m_ctl_value[%d]=%d\n", m_id, m_ctl_value[ch]);
+    }
+    else
+    {
+        if(m_ctl_value[ch] >> 7 == 0)
+        {
+            qDebug("CH %d offline.\n", ch);
+            return 0;
+        }
+        // 翻转状态
+        m_ctl_value[ch] ^=1<<0;
+    }
+    up_ctl_text();
+}
+
+#if 0
+// 更新控制开关按钮的状态
+int MainWindow::up_ctl_status()
+{
+    int ret = 0;
+    // 按位遍历各个开关按钮
+    for(int i = 0; i < 5; i++)
+    {
+        if((m_ctl_value[i] >> 7) == 0)
+        {
+            continue;
+        }
         qDebug()<<"value:"<<i<<"="<<m_ctl_value[i];
         for(int j = 0; j < 6; j++)
         {
@@ -529,7 +741,7 @@ int MainWindow::up_ctl_status()
     }
     return ret;
 }
-
+#endif
 // | Vrms:   0.00000V | Irms:   0.00000A | P:   0.0000W | PF: 0.00000 | F:  0.0000Hz | W:   0.0051KW*H |
 void MainWindow::read_serial_vol_curr_CH01()
 {
@@ -565,13 +777,13 @@ void MainWindow::read_serial_power_communication()
     cust_delay(120);
     m_comm_rev_flag = 1;        // 电力载波通信有收到数据
     read_buff = m_serial_power_communication->readAll();
-    qDebug("COMM read:%s\n", qPrintable(QString(read_buff)));
+//    qDebug("COMM read:%s\n", qPrintable(QString(read_buff)));
     parse_comm_data(QString(read_buff));
 }
 
 void MainWindow::on_timeout()
 {
-    qDebug()<<"this is timeout";
+//    qDebug()<<"this is timeout";
 
     m_timer->stop();
     m_serial_vol_curr_CH01->write(">>GetVal");
@@ -620,329 +832,203 @@ void MainWindow::on_slave_timeout()
 
 void MainWindow::on_salve_01_ctr01_clicked()
 {
-    qDebug()<<"on_salve_01_ctr01_clicked";
     m_click_flag[0] = m_click_flag[0] | 1<<0;
-    m_ctl_value[0] ^=1<<0;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_01_ctr01_clicked fail.";
-    }
+    button_click(0, 0);
 }
 
 void MainWindow::on_salve_01_ctr02_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<1;
-    m_ctl_value[0] ^=1<<1;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_01_ctr02_clicked fail.";
-    }
-
+    button_click(0, 1);
 }
 
 void MainWindow::on_salve_01_ctr03_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<2;
-    m_ctl_value[0] ^=1<<2;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_01_ctr03_clicked fail.";
-    }
-
+    button_click(0, 2);
 }
 
 void MainWindow::on_salve_01_ctr04_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<3;
-    m_ctl_value[0] ^=1<<3;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_01_ctr04_clicked fail.";
-    }
-
+    button_click(0, 3);
 }
 
 void MainWindow::on_salve_01_ctr05_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<4;
-    m_ctl_value[0] ^=1<<4;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_01_ctr05_clicked fail.";
-    }
-
+    button_click(0, 4);
 }
 
 void MainWindow::on_salve_01_ctr06_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<5;
-    m_ctl_value[0] ^=1<<5;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_01_ctr06_clicked fail.";
-    }
-
+    button_click(0, 5);
 }
 
 void MainWindow::on_salve_02_ctr01_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<0;
-    m_ctl_value[1] ^=1<<0;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_02_ctr01_clicked fail.";
-    }
+    button_click(1, 0);
 
 }
 
 void MainWindow::on_salve_02_ctr02_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<1;
-    m_ctl_value[1] ^=1<<1;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_02_ctr02_clicked fail.";
-    }
+    button_click(1, 1);
 
 }
 
 void MainWindow::on_salve_02_ctr03_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<2;
-    m_ctl_value[1] ^=1<<2;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_02_ctr03_clicked fail.";
-    }
+    button_click(1, 2);
 
 }
 
 void MainWindow::on_salve_02_ctr04_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<3;
-    m_ctl_value[1] ^=1<<3;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_02_ctr04_clicked fail.";
-    }
+    button_click(1, 3);
 
 }
 
 void MainWindow::on_salve_02_ctr05_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<4;
-    m_ctl_value[1] ^=1<<4;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_02_ctr05_clicked fail.";
-    }
+    button_click(1, 4);
 
 }
 
 void MainWindow::on_salve_02_ctr06_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<5;
-    m_ctl_value[1] ^=1<<5;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_02_ctr06_clicked fail.";
-    }
+    button_click(1, 5);
 
 }
 
 void MainWindow::on_salve_03_ctr01_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<0;
-    m_ctl_value[2] ^=1<<0;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_03_ctr01_clicked fail.";
-    }
+    button_click(2, 0);
 
 }
 
 void MainWindow::on_salve_03_ctr02_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<1;
-    m_ctl_value[2] ^=1<<1;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_03_ctr02_clicked fail.";
-    }
+    button_click(2, 1);
 
 }
 
 void MainWindow::on_salve_03_ctr03_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<2;
-    m_ctl_value[2] ^=1<<2;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_03_ctr03_clicked fail.";
-    }
+    button_click(2, 2);
 
 }
 
 void MainWindow::on_salve_03_ctr04_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<3;
-    m_ctl_value[2] ^=1<<3;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_03_ctr04_clicked fail.";
-    }
+    button_click(2, 3);
 
 }
 
 void MainWindow::on_salve_03_ctr05_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<4;
-    m_ctl_value[2] ^=1<<4;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_03_ctr05_clicked fail.";
-    }
+    button_click(2, 4);
 
 }
 
 void MainWindow::on_salve_03_ctr06_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<5;
-    m_ctl_value[2] ^=1<<5;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_03_ctr06_clicked fail.";
-    }
+    button_click(2, 5);
 
 }
 
 void MainWindow::on_salve_04_ctr01_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<0;
-    m_ctl_value[3] ^=1<<0;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_04_ctr01_clicked fail.";
-    }
+    button_click(3, 0);
 
 }
 
 void MainWindow::on_salve_04_ctr02_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<1;
-    m_ctl_value[3] ^=1<<1;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_04_ctr02_clicked fail.";
-    }
+    button_click(3, 1);
 
 }
 
 void MainWindow::on_salve_04_ctr03_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<2;
-    m_ctl_value[3] ^=1<<2;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_04_ctr03_clicked fail.";
-    }
+    button_click(3, 2);
 
 }
 
 void MainWindow::on_salve_04_ctr04_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<3;
-    m_ctl_value[3] ^=1<<3;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_04_ctr04_clicked fail.";
-    }
+    button_click(3, 3);
 
 }
 
 void MainWindow::on_salve_04_ctr05_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<4;
-    m_ctl_value[3] ^=1<<4;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_04_ctr05_clicked fail.";
-    }
+    button_click(3, 4);
 
 }
 
 void MainWindow::on_salve_04_ctr06_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<5;
-    m_ctl_value[3] ^=1<<5;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_04_ctr06_clicked fail.";
-    }
+    button_click(3, 5);
 
 }
 
 void MainWindow::on_salve_05_ctr01_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<0;
-    m_ctl_value[4] ^=1<<0;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_05_ctr01_clicked fail.";
-    }
+    button_click(4, 0);
 
 }
 
 void MainWindow::on_salve_05_ctr02_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<1;
-    m_ctl_value[4] ^=1<<1;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_05_ctr02_clicked fail.";
-    }
+    button_click(4, 1);
 
 }
 
 void MainWindow::on_salve_05_ctr03_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<2;
-    m_ctl_value[4] ^=1<<2;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_05_ctr03_clicked fail.";
-    }
+    button_click(4, 2);
 
 }
 
 void MainWindow::on_salve_05_ctr04_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<3;
-    m_ctl_value[4] ^=1<<3;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_05_ctr04_clicked fail.";
-    }
+    button_click(4, 3);
 
 }
 
 void MainWindow::on_salve_05_ctr05_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<4;
-    m_ctl_value[4] ^=1<<4;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_05_ctr05_clicked fail.";
-    }
+    button_click(4, 4);
 
 }
 
 void MainWindow::on_salve_05_ctr06_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<5;
-    m_ctl_value[4] ^=1<<5;
-    if(up_ctl_status() == -1)
-    {
-        qDebug()<<"on_salve_05_ctr06_clicked fail.";
-    }
+    button_click(4, 5);
 }

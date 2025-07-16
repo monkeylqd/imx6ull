@@ -87,6 +87,9 @@ public:
     int check_data(const char *data, int len);
     int run_ctl_cmd(int dir, int index, int value);
     int up_ctl_status(void);
+    int up_ctl_text(void);
+    int tri_ctl(int index);
+    int button_click(int ch, int index);
 
 private slots:
 
