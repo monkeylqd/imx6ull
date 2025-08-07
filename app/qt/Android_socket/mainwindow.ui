@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>589</width>
+    <height>559</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>IP</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" colspan="3">
+     <widget class="QLineEdit" name="IP_LineEdit"/>
+    </item>
+    <item row="0" column="4">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>PORT</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5" colspan="2">
+     <widget class="QLineEdit" name="port_LineEdit"/>
+    </item>
+    <item row="0" column="7">
+     <widget class="QPushButton" name="connect_button">
+      <property name="text">
+       <string>connect</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_47">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>分机1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>分机2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="5">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>分机3</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="6">
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string>分机4</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="7">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>分机5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" rowspan="2" colspan="8">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2" rowspan="2">
+     <widget class="QLabel" name="slave_1_vol_ch1">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3" rowspan="2">
+     <widget class="QLabel" name="slave_2_vol_ch1">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="5" rowspan="2">
+     <widget class="QLabel" name="slave_3_vol_ch1">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="6" rowspan="2">
+     <widget class="QLabel" name="slave_4_vol_ch1">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="7" rowspan="2">
+     <widget class="QLabel" name="slave_5_vol_ch1">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>通道1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2">
+     <widget class="QLabel" name="slave_1_cur_ch1">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
+     <widget class="QLabel" name="slave_2_cur_ch1">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="5">
+     <widget class="QLabel" name="slave_3_cur_ch1">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="6">
+     <widget class="QLabel" name="slave_4_cur_ch1">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="7">
+     <widget class="QLabel" name="slave_5_cur_ch1">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0" colspan="8">
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0" rowspan="2">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>通道2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="2">
+     <widget class="QLabel" name="slave_1_vol_ch2">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="3">
+     <widget class="QLabel" name="slave_2_vol_ch2">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="5">
+     <widget class="QLabel" name="slave_3_vol_ch2">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="6">
+     <widget class="QLabel" name="slave_4_vol_ch2">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="7">
+     <widget class="QLabel" name="slave_5_vol_ch2">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="2">
+     <widget class="QLabel" name="slave_1_cur_ch2">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="3">
+     <widget class="QLabel" name="slave_2_cur_ch2">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="5">
+     <widget class="QLabel" name="slave_3_cur_ch2">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="6">
+     <widget class="QLabel" name="slave_4_cur_ch2">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="7">
+     <widget class="QLabel" name="slave_5_cur_ch2">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="0" rowspan="2" colspan="8">
+     <widget class="Line" name="line_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="2" rowspan="2">
+     <widget class="QLabel" name="slave_1_vol_ch3">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="3" rowspan="2">
+     <widget class="QLabel" name="slave_2_vol_ch3">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="5" rowspan="2">
+     <widget class="QLabel" name="slave_3_vol_ch3">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="6" rowspan="2">
+     <widget class="QLabel" name="slave_4_vol_ch3">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="7" rowspan="2">
+     <widget class="QLabel" name="slave_5_vol_ch3">
+      <property name="text">
+       <string>0V</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>通道3</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="2">
+     <widget class="QLabel" name="slave_1_cur_ch3">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="3">
+     <widget class="QLabel" name="slave_2_cur_ch3">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="5">
+     <widget class="QLabel" name="slave_3_cur_ch3">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="6">
+     <widget class="QLabel" name="slave_4_cur_ch3">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="7">
+     <widget class="QLabel" name="slave_5_cur_ch3">
+      <property name="text">
+       <string>0A</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="0" colspan="8">
+     <widget class="Line" name="line_12">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="0">
+     <widget class="QLabel" name="label_41">
+      <property name="text">
+       <string>CTL1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="2">
+     <widget class="QPushButton" name="slave_1_ctl1">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="3">
+     <widget class="QPushButton" name="slave_2_ctl1">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="4" colspan="2">
+     <widget class="QPushButton" name="slave_3_ctl1">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="6">
+     <widget class="QPushButton" name="slave_4_ctl1">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="7">
+     <widget class="QPushButton" name="slave_5_ctl1">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="0" colspan="8">
+     <widget class="Line" name="line_13">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="0">
+     <widget class="QLabel" name="label_48">
+      <property name="text">
+       <string>CTL2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="2">
+     <widget class="QPushButton" name="slave_1_ctl2">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="3">
+     <widget class="QPushButton" name="slave_2_ctl2">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="4" colspan="2">
+     <widget class="QPushButton" name="slave_3_ctl2">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="6">
+     <widget class="QPushButton" name="slave_4_ctl2">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="17" column="7">
+     <widget class="QPushButton" name="slave_5_ctl2">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="0" colspan="8">
+     <widget class="Line" name="line_14">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="0">
+     <widget class="QLabel" name="label_49">
+      <property name="text">
+       <string>CTL3</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="2">
+     <widget class="QPushButton" name="slave_1_ctl3">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="3">
+     <widget class="QPushButton" name="slave_2_ctl3">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="4" colspan="2">
+     <widget class="QPushButton" name="slave_3_ctl3">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="6">
+     <widget class="QPushButton" name="slave_4_ctl3">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="19" column="7">
+     <widget class="QPushButton" name="slave_5_ctl3">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="20" column="0" colspan="8">
+     <widget class="Line" name="line_15">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="0">
+     <widget class="QLabel" name="label_50">
+      <property name="text">
+       <string>CTL4</string>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="2">
+     <widget class="QPushButton" name="slave_1_ctl4">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="3">
+     <widget class="QPushButton" name="slave_2_ctl4">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="4" colspan="2">
+     <widget class="QPushButton" name="slave_3_ctl4">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="6">
+     <widget class="QPushButton" name="slave_4_ctl4">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="7">
+     <widget class="QPushButton" name="slave_5_ctl4">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="22" column="0" colspan="8">
+     <widget class="Line" name="line_16">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="0">
+     <widget class="QLabel" name="label_51">
+      <property name="text">
+       <string>CTL5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="2">
+     <widget class="QPushButton" name="slave_1_ctl5">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="3">
+     <widget class="QPushButton" name="slave_2_ctl5">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="4" colspan="2">
+     <widget class="QPushButton" name="slave_3_ctl5">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="6">
+     <widget class="QPushButton" name="slave_4_ctl5">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="23" column="7">
+     <widget class="QPushButton" name="slave_5_ctl5">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="24" column="0" colspan="8">
+     <widget class="Line" name="line_17">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="25" column="0">
+     <widget class="QLabel" name="label_52">
+      <property name="text">
+       <string>CTL6</string>
+      </property>
+     </widget>
+    </item>
+    <item row="25" column="2">
+     <widget class="QPushButton" name="slave_1_ctl6">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="25" column="3">
+     <widget class="QPushButton" name="slave_2_ctl6">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="25" column="4" colspan="2">
+     <widget class="QPushButton" name="slave_3_ctl6">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="25" column="6">
+     <widget class="QPushButton" name="slave_4_ctl6">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="25" column="7">
+     <widget class="QPushButton" name="slave_5_ctl6">
+      <property name="text">
+       <string>关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="26" column="0" colspan="8">
+     <widget class="Line" name="line_18">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>589</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
