@@ -6,7 +6,10 @@ else
 	_exit="exit"
 fi
 
-export PATH=/home/lqd/imx6ull/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/:${PATH}
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+echo ${SCRIPT_DIR}
+
+export PATH=${SCRIPT_DIR}/../tools/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf/bin/:${PATH}
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
 
