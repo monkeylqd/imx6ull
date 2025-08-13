@@ -12,10 +12,23 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_socket_status = SOCKET_STATUS_DISCONNECT;
 //    m_id = 0;
     memset(&m_ctl_value, 0, sizeof(m_ctl_value));
     memset(&m_CH_value, 0, sizeof(m_CH_value));
     memset(&m_click_flag, 0, sizeof(m_click_flag));
+    m_socket_client = new SocketClient();
+    m_socket_thread = new QThread();
+    m_socket_client->moveToThread(m_socket_thread);
+    m_socket_thread->start();
+
+
+    QObject::connect(this, &MainWindow::connect_server, m_socket_client, &SocketClient::connect_server, Qt::QueuedConnection);
+    QObject::connect(this, &MainWindow::disconnect_server, m_socket_client, &SocketClient::disconnect_server, Qt::QueuedConnection);
+    QObject::connect(this, &MainWindow::send_to_server, m_socket_client, &SocketClient::send_to_server, Qt::QueuedConnection);
+
+    QObject::connect(m_socket_client, &SocketClient::rev_form_server, this, &MainWindow::rev_form_server, Qt::QueuedConnection);
+    QObject::connect(m_socket_client, &SocketClient::report_socket_status, this, &MainWindow::report_socket_status, Qt::QueuedConnection);
 
     m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio3/value");
     m_ctl_cmd.append("echo 1 > /sys/class/gpio/gpio115/value");
@@ -184,6 +197,29 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::rev_form_server(const QByteArray &data)
+{
+    qDebug()<<"hex:"<<data.toHex();
+}
+
+void MainWindow::report_socket_status(int status)
+{
+    m_socket_status = status;
+    if(SOCKET_STATUS_CONNECT == status)
+    {
+        ui->socket_connect->setText("disconnect");
+        ui->IP_lineEdit->setDisabled(true);
+        ui->PORT_lineEdit->setDisabled(true);
+    }
+    else if(SOCKET_STATUS_DISCONNECT == status)
+    {
+        ui->socket_connect->setText("connect");
+        ui->IP_lineEdit->setDisabled(false);
+        ui->PORT_lineEdit->setDisabled(false);
+    }
+
+}
+
 void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
 {
     QString test1 = inputs.remove(' ');
@@ -264,6 +300,10 @@ void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
     for(int i = 0; i < measurements.size(); i++)
     {
         m_CH_value[index_ch][i] = (int)measurements.at(i).value;
+        if(i < 2)
+        {
+            m_vol_cur_value[m_id][index_ch*2+i] = m_CH_value[index_ch][i];
+        }
     }
     qDebug()<<m_CH_value[index_ch][0]<<" "<<m_CH_value[index_ch][1]<<" "<<m_CH_value[index_ch][2]<<" "<<m_CH_value[index_ch][3]<<" "<<m_CH_value[index_ch][4]<<" "<<m_CH_value[index_ch][5];
 #endif
@@ -326,7 +366,7 @@ int MainWindow::parse_comm_data(QString str)
                     qDebug() << "read Command failed:" << process_read.readAllStandardError();
                 }
             }
-            qDebug("m_ctl_value[%d]=%d\n", m_id, m_ctl_value[m_id]);
+            qDebug("m_ctl_value[%lld]=%d\n", m_id, m_ctl_value[m_id]);
             up_ctl_text();
         }
     }
@@ -370,6 +410,7 @@ int MainWindow::parse_comm_data(QString str)
         for(int i = 0; i < 6; i++)
         {
             vol_cur[i] = (charPtr[i*3+1]-'0')*100 + (charPtr[i*3+2]-'0')*10 + (charPtr[i*3+3]-'0');
+            m_vol_cur_value[rev_id][i] = vol_cur[i];
         }
         printf("vol:%d %d %d %d %d %d\n", vol_cur[0], vol_cur[1], vol_cur[2], vol_cur[3], vol_cur[4], vol_cur[5]);
 
@@ -659,7 +700,7 @@ int MainWindow::button_click(int ch, int index)
         {
             qDebug()<<"tri_ctl fail";
         }
-        qDebug("m_ctl_value[%d]=%d\n", m_id, m_ctl_value[ch]);
+        qDebug("m_ctl_value[%lld]=%d\n", m_id, m_ctl_value[ch]);
     }
     else
     {
@@ -672,6 +713,124 @@ int MainWindow::button_click(int ch, int index)
         m_ctl_value[ch] ^=1<<0;
     }
     up_ctl_text();
+    send_socket_data();
+    return 0;
+}
+
+int MainWindow::send_socket_data()
+{
+    unsigned char m_send_buff[69];
+    m_mutex.lock();
+    memset(m_send_buff, 0, sizeof(m_send_buff));
+    m_send_buff[0] = 0xaa;  //头
+    m_send_buff[1] = m_id & 0xff;  //app的ID
+    m_send_buff[2] = 0xff;  //预留
+
+    // 分机1的通道1 电压电流
+    m_send_buff[3] = (m_vol_cur_value[0][0]>>8) & 0xff;
+    m_send_buff[4] =  m_vol_cur_value[0][0] & 0xff;
+    m_send_buff[5] = (m_vol_cur_value[0][1]>>8) & 0xff;
+    m_send_buff[6] =  m_vol_cur_value[0][1] & 0xff;
+
+    // 分机1的通道2 电压电流
+    m_send_buff[7] = (m_vol_cur_value[0][2]>>8) & 0xff;
+    m_send_buff[8] =  m_vol_cur_value[0][2] & 0xff;
+    m_send_buff[9] = (m_vol_cur_value[0][3]>>8) & 0xff;
+    m_send_buff[10] = m_vol_cur_value[0][3] & 0xff;
+
+    // 分机1的通道3 电压电流
+    m_send_buff[11] = (m_vol_cur_value[0][4]>>8) & 0xff;
+    m_send_buff[12] =  m_vol_cur_value[0][4] & 0xff;
+    m_send_buff[13] = (m_vol_cur_value[0][5]>>8) & 0xff;
+    m_send_buff[14] =  m_vol_cur_value[0][5] & 0xff;
+
+    // 分机2的通道1 电压电流
+    m_send_buff[15] = (m_vol_cur_value[1][0]>>8) & 0xff;
+    m_send_buff[16] =  m_vol_cur_value[1][0] & 0xff;
+    m_send_buff[17] = (m_vol_cur_value[1][1]>>8) & 0xff;
+    m_send_buff[18] =  m_vol_cur_value[1][1] & 0xff;
+
+    // 分机2通道2 电压电流
+    m_send_buff[19] = (m_vol_cur_value[1][2]>>8) & 0xff;
+    m_send_buff[20] =  m_vol_cur_value[1][2] & 0xff;
+    m_send_buff[21] = (m_vol_cur_value[1][3]>>8) & 0xff;
+    m_send_buff[22] =  m_vol_cur_value[1][3] & 0xff;
+
+    // 分机2的通道3 电压电流
+    m_send_buff[23] = (m_vol_cur_value[1][4]>>8) & 0xff;
+    m_send_buff[24] =  m_vol_cur_value[1][4] & 0xff;
+    m_send_buff[25] = (m_vol_cur_value[1][5]>>8) & 0xff;
+    m_send_buff[26] =  m_vol_cur_value[1][5] & 0xff;
+
+    // 分机3的通道1 电压电流
+    m_send_buff[27] = (m_vol_cur_value[2][0]>>8) & 0xff;
+    m_send_buff[28] =  m_vol_cur_value[2][0] & 0xff;
+    m_send_buff[29] = (m_vol_cur_value[2][1]>>8) & 0xff;
+    m_send_buff[30] =  m_vol_cur_value[2][1] & 0xff;
+
+    // 分机3的通道2 电压电流
+    m_send_buff[31] = (m_vol_cur_value[2][2]>>8) & 0xff;
+    m_send_buff[32] =  m_vol_cur_value[2][2] & 0xff;
+    m_send_buff[33] = (m_vol_cur_value[2][3]>>8) & 0xff;
+    m_send_buff[34] =  m_vol_cur_value[2][3] & 0xff;
+
+    // 分机3的通道3 电压电流
+    m_send_buff[35] = (m_vol_cur_value[2][4]>>8) & 0xff;
+    m_send_buff[36] =  m_vol_cur_value[2][4] & 0xff;
+    m_send_buff[37] = (m_vol_cur_value[2][5]>>8) & 0xff;
+    m_send_buff[38] =  m_vol_cur_value[2][5] & 0xff;
+
+    // 分机4的通道1 电压电流
+    m_send_buff[39] = (m_vol_cur_value[3][0]>>8) & 0xff;
+    m_send_buff[40] =  m_vol_cur_value[3][0] & 0xff;
+    m_send_buff[41] = (m_vol_cur_value[3][1]>>8) & 0xff;
+    m_send_buff[42] =  m_vol_cur_value[3][1] & 0xff;
+
+    // 分机4的通道2 电压电流
+    m_send_buff[43] = (m_vol_cur_value[3][2]>>8) & 0xff;
+    m_send_buff[44] =  m_vol_cur_value[3][2] & 0xff;
+    m_send_buff[45] = (m_vol_cur_value[3][3]>>8) & 0xff;
+    m_send_buff[46] =  m_vol_cur_value[3][3] & 0xff;
+
+    // 分机4的通道3 电压电流
+    m_send_buff[47] = (m_vol_cur_value[3][4]>>8) & 0xff;
+    m_send_buff[48] =  m_vol_cur_value[3][4] & 0xff;
+    m_send_buff[49] = (m_vol_cur_value[3][5]>>8) & 0xff;
+    m_send_buff[50] =  m_vol_cur_value[3][5] & 0xff;
+
+    // 分机5的通道1 电压电流
+    m_send_buff[51] = (m_vol_cur_value[4][0]>>8) & 0xff;
+    m_send_buff[52] =  m_vol_cur_value[4][0] & 0xff;
+    m_send_buff[53] = (m_vol_cur_value[4][1]>>8) & 0xff;
+    m_send_buff[54] =  m_vol_cur_value[4][1] & 0xff;
+
+    // 分机5的通道2 电压电流
+    m_send_buff[55] = (m_vol_cur_value[4][2]>>8) & 0xff;
+    m_send_buff[56] =  m_vol_cur_value[4][2] & 0xff;
+    m_send_buff[57] = (m_vol_cur_value[4][3]>>8) & 0xff;
+    m_send_buff[58] =  m_vol_cur_value[4][3] & 0xff;
+
+    // 分机5的通道3 电压电流
+    m_send_buff[59] = (m_vol_cur_value[4][4]>>8) & 0xff;
+    m_send_buff[60] =  m_vol_cur_value[4][4] & 0xff;
+    m_send_buff[61] = (m_vol_cur_value[4][5]>>8) & 0xff;
+    m_send_buff[62] =  m_vol_cur_value[4][5] & 0xff;
+
+
+    // 5个分机的ctl值
+    m_send_buff[63] = m_ctl_value[0];
+    m_send_buff[64] = m_ctl_value[1];
+    m_send_buff[65] = m_ctl_value[2];
+    m_send_buff[66] = m_ctl_value[3];
+    m_send_buff[67] = m_ctl_value[4];
+
+    // 尾
+    m_send_buff[68] = 0x55;
+
+    QByteArray byteArray(reinterpret_cast<const char*>(m_send_buff), sizeof (m_send_buff));
+    emit send_to_server(byteArray);
+    m_mutex.unlock();
+    return 0;
 }
 
 #if 0
@@ -783,6 +942,8 @@ void MainWindow::read_serial_power_communication()
 
 void MainWindow::on_timeout()
 {
+    static int count = 0;
+    count++;
 //    qDebug()<<"this is timeout";
 
     m_timer->stop();
@@ -790,7 +951,10 @@ void MainWindow::on_timeout()
     m_serial_vol_curr_CH02->write(">>GetVal");
     m_serial_vol_curr_CH03->write(">>GetVal");
     m_timer->start(2000);
-
+    if(count%3 == 0)
+    {
+        send_socket_data();
+    }
 }
 
 void MainWindow::on_comm_send_timeout()
@@ -1031,4 +1195,17 @@ void MainWindow::on_salve_05_ctr06_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<5;
     button_click(4, 5);
+}
+
+void MainWindow::on_socket_connext_clicked()
+{
+    qDebug()<<"on_socket_connect_clicked";
+    if(m_socket_status == SOCKET_STATUS_CONNECT)
+    {
+        emit disconnect_server();
+    }
+    else if(m_socket_status ==  SOCKET_STATUS_DISCONNECT)
+    {
+        emit connect_server(ui->IP_lineEdit->text(), ui->PORT_lineEdit->text().toUInt());
+    }
 }

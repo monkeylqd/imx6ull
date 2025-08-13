@@ -10,9 +10,12 @@
 #include <QTimer>
 #include <QDebug>
 #include <QProcess>
+#include <QMutex>
+#include <QThread>
 
 #include <QStringList>
 #include <QRegularExpression>
+#include "socketclient.h"
 
 #define USE_DEBUG    0
 
@@ -64,9 +67,16 @@ public:
     QTimer *m_comm_send_timer;
     QStringList m_ctl_cmd;
 
+
+    SocketClient *m_socket_client;
+    QThread *m_socket_thread;
+    int m_socket_status;
+    QMutex m_mutex;                         // 用于发送socket数据的时候上锁
+
     int m_CH_value[3][6];       // 保持3路通道的电流电压值
     int m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
     int m_click_flag[5];
+    int m_vol_cur_value[5][6];  // 5个分机的电压电流信息
 
     QString m_ID;                // 设备ID，8个字节
     qint64 m_id;
@@ -78,7 +88,14 @@ public:
     QSerialPort *m_serial_vol_curr_CH03;        // 采集电压、电流的第3路串口
     QSerialPort *m_serial_power_communication;  // 电力载波通信串口
 
+signals:
+    void connect_server(QString ip, int port);
+    void disconnect_server();
+    void send_to_server(const QByteArray &data);
 
+public slots:
+    void rev_form_server(const QByteArray &data);
+    void report_socket_status(int status);
 
 public:
     int parse_uart_data();
@@ -90,6 +107,7 @@ public:
     int up_ctl_text(void);
     int tri_ctl(int index);
     int button_click(int ch, int index);
+    int send_socket_data();
 
 private slots:
 
@@ -163,6 +181,8 @@ private slots:
     void on_salve_05_ctr05_clicked();
 
     void on_salve_05_ctr06_clicked();
+
+    void on_socket_connext_clicked();
 
 private:
     Ui::MainWindow *ui;
