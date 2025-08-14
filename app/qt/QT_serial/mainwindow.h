@@ -105,6 +105,7 @@ public:
     int run_ctl_cmd(int dir, int index, int value);
     int up_ctl_status(void);
     int up_ctl_text(void);
+    int up_vol_cur_text(void);
     int tri_ctl(int index);
     int button_click(int ch, int index);
     int send_socket_data();

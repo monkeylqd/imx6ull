@@ -190,6 +190,10 @@ MainWindow::MainWindow(QWidget *parent)
     // 发送查找ID的命令
 //    m_serial_power_communication->writeData((const char *)("AT+ADDR?\r\n"), 10);
     m_serial_power_communication->write("AT+ADDR?\r\n");
+    if(m_socket_status ==  SOCKET_STATUS_DISCONNECT)
+    {
+        emit connect_server("47.109.24.25", 33306);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -200,6 +204,39 @@ MainWindow::~MainWindow()
 void MainWindow::rev_form_server(const QByteArray &data)
 {
     qDebug()<<"hex:"<<data.toHex();
+    if(data.size() == 9 && data.at(0) == 0xaa && data.at(1) == 0xa0)
+    {
+        if(m_ctl_value[m_id] != data.at(m_id+3))
+        {
+            for(int i = 0; i < 6; i++)
+            {
+                if(((m_ctl_value[m_id]>>i) & 0x01) != ((data.at(m_id+3)>>i) & 0x01))
+                {
+                    tri_ctl(i);
+                }
+            }
+        }
+        for(int i = 0; i < 5; i++)
+        {
+            if(m_id == i)
+            {
+                continue;
+            }
+            if((data.at(i+3) >> 7) == 0)
+            {
+                m_ctl_value[i] = data.at(i+3);
+            }
+        }
+        up_ctl_text();
+    }
+    else if(data.size() == 69)
+    {
+        for(int i = 0; i < 5; i++)
+        {
+
+        }
+        up_vol_cur_text();
+    }
 }
 
 void MainWindow::report_socket_status(int status)
@@ -644,6 +681,24 @@ int MainWindow::up_ctl_text()
     return 0;
 }
 
+int MainWindow::up_vol_cur_text()
+{
+    for(int i = 0; i < 5; i++)
+    {
+        if(i == m_id)
+        {
+            continue;
+        }
+        m_vol_cur_LabelList.at(6*(i)+0)->setText(QLocale().toString(m_vol_cur_value[i][0]) + "V");
+        m_vol_cur_LabelList.at(6*(i)+2)->setText(QLocale().toString(m_vol_cur_value[i][2]) + "V");
+        m_vol_cur_LabelList.at(6*(i)+4)->setText(QLocale().toString(m_vol_cur_value[i][4]) + "V");
+
+        m_vol_cur_LabelList.at(6*(i)+1)->setText(QLocale().toString(m_vol_cur_value[i][1]) + "A");
+        m_vol_cur_LabelList.at(6*(i)+3)->setText(QLocale().toString(m_vol_cur_value[i][3]) + "A");
+        m_vol_cur_LabelList.at(6*(i)+5)->setText(QLocale().toString(m_vol_cur_value[i][5]) + "A");
+    }
+}
+
 int MainWindow::tri_ctl(int index)
 {
 
@@ -675,8 +730,8 @@ int MainWindow::tri_ctl(int index)
             ret = result.toInt(&ok);
             if(ok)
             {
-                m_ctl_value[m_id] &= ~(1<<i);
-                m_ctl_value[m_id] |= ret<<i;
+                m_ctl_value[m_id] &= ~(1<<i);   // 清空对应的bit
+                m_ctl_value[m_id] |= ret<<i;    // 将获取的值更新到对应的bit
                 qDebug("m_id: %lld index=%d value=%d.\n", m_id, i, ret);
             }
         }
@@ -721,6 +776,7 @@ int MainWindow::send_socket_data()
 {
     unsigned char m_send_buff[69];
     m_mutex.lock();
+#if 0
     memset(m_send_buff, 0, sizeof(m_send_buff));
     m_send_buff[0] = 0xaa;  //头
     m_send_buff[1] = m_id & 0xff;  //app的ID
@@ -826,9 +882,125 @@ int MainWindow::send_socket_data()
 
     // 尾
     m_send_buff[68] = 0x55;
+#else
+    srand(time(NULL));
+    memset(m_send_buff, 0, sizeof(m_send_buff));
+    memset(m_vol_cur_value, 0, sizeof(m_vol_cur_value));
 
+    m_send_buff[0] = 0xaa;  //头
+    m_send_buff[1] = rand()%5;  //app的ID
+    m_send_buff[2] = 0xff;  //预留
+
+    // 分机1的通道1 电压电流
+    m_send_buff[3] = (m_vol_cur_value[0][0]>>8) & 0xff;
+    m_send_buff[4] =  rand()%250;
+    m_send_buff[5] = (m_vol_cur_value[0][1]>>8) & 0xff;
+    m_send_buff[6] =  rand()%250;
+
+    // 分机1的通道2 电压电流
+    m_send_buff[7] = (m_vol_cur_value[0][2]>>8) & 0xff;
+    m_send_buff[8] =  rand()%250;
+    m_send_buff[9] = (m_vol_cur_value[0][3]>>8) & 0xff;
+    m_send_buff[10] = rand()%250;
+
+    // 分机1的通道3 电压电流
+    m_send_buff[11] = (m_vol_cur_value[0][4]>>8) & 0xff;
+    m_send_buff[12] =  rand()%250;
+    m_send_buff[13] = (m_vol_cur_value[0][5]>>8) & 0xff;
+    m_send_buff[14] =  rand()%250;
+
+    // 分机2的通道1 电压电流
+    m_send_buff[15] = (m_vol_cur_value[1][0]>>8) & 0xff;
+    m_send_buff[16] =  rand()%250;
+    m_send_buff[17] = (m_vol_cur_value[1][1]>>8) & 0xff;
+    m_send_buff[18] =  rand()%250;
+
+    // 分机2通道2 电压电流
+    m_send_buff[19] = (m_vol_cur_value[1][2]>>8) & 0xff;
+    m_send_buff[20] =  rand()%250;
+    m_send_buff[21] = (m_vol_cur_value[1][3]>>8) & 0xff;
+    m_send_buff[22] =  rand()%250;
+
+    // 分机2的通道3 电压电流
+    m_send_buff[23] = (m_vol_cur_value[1][4]>>8) & 0xff;
+    m_send_buff[24] =  rand()%250;
+    m_send_buff[25] = (m_vol_cur_value[1][5]>>8) & 0xff;
+    m_send_buff[26] =  rand()%250;
+
+    // 分机3的通道1 电压电流
+    m_send_buff[27] = (m_vol_cur_value[2][0]>>8) & 0xff;
+    m_send_buff[28] =  rand()%250;
+    m_send_buff[29] = (m_vol_cur_value[2][1]>>8) & 0xff;
+    m_send_buff[30] =  rand()%250;
+
+    // 分机3的通道2 电压电流
+    m_send_buff[31] = (m_vol_cur_value[2][2]>>8) & 0xff;
+    m_send_buff[32] =  rand()%250;
+    m_send_buff[33] = (m_vol_cur_value[2][3]>>8) & 0xff;
+    m_send_buff[34] =  rand()%250;
+
+    // 分机3的通道3 电压电流
+    m_send_buff[35] = (m_vol_cur_value[2][4]>>8) & 0xff;
+    m_send_buff[36] =  rand()%250;
+    m_send_buff[37] = (m_vol_cur_value[2][5]>>8) & 0xff;
+    m_send_buff[38] =  rand()%250;
+
+    // 分机4的通道1 电压电流
+    m_send_buff[39] = (m_vol_cur_value[3][0]>>8) & 0xff;
+    m_send_buff[40] =  rand()%250;
+    m_send_buff[41] = (m_vol_cur_value[3][1]>>8) & 0xff;
+    m_send_buff[42] =  rand()%250;
+
+    // 分机4的通道2 电压电流
+    m_send_buff[43] = (m_vol_cur_value[3][2]>>8) & 0xff;
+    m_send_buff[44] =  rand()%250;
+    m_send_buff[45] = (m_vol_cur_value[3][3]>>8) & 0xff;
+    m_send_buff[46] =  rand()%250;
+
+    // 分机4的通道3 电压电流
+    m_send_buff[47] = (m_vol_cur_value[3][4]>>8) & 0xff;
+    m_send_buff[48] =  rand()%250;
+    m_send_buff[49] = (m_vol_cur_value[3][5]>>8) & 0xff;
+    m_send_buff[50] =  rand()%250;
+
+    // 分机5的通道1 电压电流
+    m_send_buff[51] = (m_vol_cur_value[4][0]>>8) & 0xff;
+    m_send_buff[52] =  rand()%250;
+    m_send_buff[53] = (m_vol_cur_value[4][1]>>8) & 0xff;
+    m_send_buff[54] =  rand()%250;
+
+    // 分机5的通道2 电压电流
+    m_send_buff[55] = (m_vol_cur_value[4][2]>>8) & 0xff;
+    m_send_buff[56] =  rand()%250;
+    m_send_buff[57] = (m_vol_cur_value[4][3]>>8) & 0xff;
+    m_send_buff[58] =  rand()%250;
+
+    // 分机5的通道3 电压电流
+    m_send_buff[59] = (m_vol_cur_value[4][4]>>8) & 0xff;
+    m_send_buff[60] =  rand()%250;
+    m_send_buff[61] = (m_vol_cur_value[4][5]>>8) & 0xff;
+    m_send_buff[62] =  rand()%250;
+
+
+    // 5个分机的ctl值
+    m_send_buff[63] = rand()%64 | 0x80;
+    m_send_buff[64] = rand()%64 | 0x80;
+    m_send_buff[65] = rand()%64 | 0x80;
+    m_send_buff[66] = rand()%64 | 0x80;
+    m_send_buff[67] = rand()%64 | 0x80;
+
+    // 尾
+    m_send_buff[68] = 0x55;
+#endif
     QByteArray byteArray(reinterpret_cast<const char*>(m_send_buff), sizeof (m_send_buff));
-    emit send_to_server(byteArray);
+    if(SOCKET_STATUS_CONNECT == m_socket_status)
+    {
+        emit send_to_server(byteArray);
+    }
+    else
+    {
+        qDebug()<< "socket disconnect";
+    }
     m_mutex.unlock();
     return 0;
 }
