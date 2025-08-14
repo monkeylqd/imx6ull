@@ -28,6 +28,7 @@ public:
 public:
     QList<QPushButton*> m_buttonList;       // 保存所有的CTL button按钮
     QList<QLabel*> m_vol_cur_LabelList;     // 保存所有的电压、电流label值
+    QList<QLabel*> m_slave_name_LabelList;     // 保存所有的电压、电流label值
     unsigned char m_ctl_value[5];           // 保存5个分机的CTL值
     unsigned int m_vol[5][3];               // 保存5个分机3个通道的电压值
     unsigned int m_cur[5][3];               // 保存5个分机3个通道的电流值

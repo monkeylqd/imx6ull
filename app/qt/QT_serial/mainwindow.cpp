@@ -233,9 +233,42 @@ void MainWindow::rev_form_server(const QByteArray &data)
     {
         for(int i = 0; i < 5; i++)
         {
-
+            if(m_id == i)
+            {
+                continue;
+            }
+            m_vol_cur_value[i][0] = data.at(i*6+3)*256 + data.at(i*6+4);
+            m_vol_cur_value[i][0] = data.at(i*6+5)*256 + data.at(i*6+6);
+            m_vol_cur_value[i][0] = data.at(i*6+7)*256 + data.at(i*6+8);
+            m_vol_cur_value[i][0] = data.at(i*6+9)*256 + data.at(i*6+10);
+            m_vol_cur_value[i][0] = data.at(i*6+11)*256 + data.at(i*6+12);
+            m_vol_cur_value[i][0] = data.at(i*6+13)*256 + data.at(i*6+14);
         }
         up_vol_cur_text();
+
+
+        if(m_ctl_value[m_id] != data.at(m_id+63))
+        {
+            for(int i = 0; i < 6; i++)
+            {
+                if(((m_ctl_value[m_id]>>i) & 0x01) != ((data.at(m_id+63)>>i) & 0x01))
+                {
+                    tri_ctl(i);
+                }
+            }
+        }
+        for(int i = 0; i < 5; i++)
+        {
+            if(m_id == i)
+            {
+                continue;
+            }
+            if(((data.at(i+63) >> 7) & 0x1) == 0x1)
+            {
+                m_ctl_value[i] = data.at(i+3);
+            }
+        }
+        up_ctl_text();
     }
 }
 
@@ -347,14 +380,16 @@ void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
     for (const auto &m : measurements) {
         qDebug() << m.name << ":" << m.value << m.unit;
     }
-    static int temp_value = 1;
-    if(temp_value >= 999)
-    {
-        temp_value = 1;
-    }
-    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(QString::number(m_CH_value[index_ch][0]+temp_value)+"V");
-    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(QString::number(m_CH_value[index_ch][1]+temp_value)+"A");
-    temp_value += temp_value;
+//    static int temp_value = 1;
+//    if(temp_value >= 999)
+//    {
+//        temp_value = 1;
+//    }
+//    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(QString::number(m_CH_value[index_ch][0]+temp_value)+"V");
+//    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(QString::number(m_CH_value[index_ch][1]+temp_value)+"A");
+//    temp_value += temp_value;
+    m_vol_cur_LabelList.at(m_id*6 + index_ch*2)->setText(QString::number(m_CH_value[index_ch][0])+"V");
+    m_vol_cur_LabelList.at(m_id*6 + index_ch*2+1)->setText(QString::number(m_CH_value[index_ch][1])+"A");
 }
 // COMM接收的数据类型有：
 // +ADDR=000000000001
@@ -776,7 +811,7 @@ int MainWindow::send_socket_data()
 {
     unsigned char m_send_buff[69];
     m_mutex.lock();
-#if 0
+#if 1
     memset(m_send_buff, 0, sizeof(m_send_buff));
     m_send_buff[0] = 0xaa;  //头
     m_send_buff[1] = m_id & 0xff;  //app的ID
@@ -1369,7 +1404,7 @@ void MainWindow::on_salve_05_ctr06_clicked()
     button_click(4, 5);
 }
 
-void MainWindow::on_socket_connext_clicked()
+void MainWindow::on_socket_connect_clicked()
 {
     qDebug()<<"on_socket_connect_clicked";
     if(m_socket_status == SOCKET_STATUS_CONNECT)
@@ -1380,4 +1415,5 @@ void MainWindow::on_socket_connext_clicked()
     {
         emit connect_server(ui->IP_lineEdit->text(), ui->PORT_lineEdit->text().toUInt());
     }
+
 }

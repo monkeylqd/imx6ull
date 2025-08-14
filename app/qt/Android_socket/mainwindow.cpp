@@ -13,6 +13,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    m_slave_name_LabelList.append(ui->slave_1_name);
+    m_slave_name_LabelList.append(ui->slave_2_name);
+    m_slave_name_LabelList.append(ui->slave_3_name);
+    m_slave_name_LabelList.append(ui->slave_4_name);
+    m_slave_name_LabelList.append(ui->slave_5_name);
     // 添加所有的label
     m_vol_cur_LabelList.append(ui->slave_1_vol_ch1);
     m_vol_cur_LabelList.append(ui->slave_1_vol_ch2);
@@ -318,6 +323,22 @@ void MainWindow::disconnect_slot()
         ui->connect_button->setText("connect");
         ui->IP_LineEdit->setEnabled(true);
         ui->port_LineEdit->setEnabled(true);
+        for(int i = 0; i <m_buttonList.size(); i++)
+        {
+            m_buttonList.at(i)->setDisabled(true);
+        }
+        memset(m_vol, 0, sizeof(m_vol));
+        memset(m_cur, 0, sizeof(m_cur));
+        for(int i = 0; i < 5; i++)
+        {
+            m_vol_cur_LabelList.at(i*6+0)->setText(QString::number(m_vol[i][0])+"V");
+            m_vol_cur_LabelList.at(i*6+1)->setText(QString::number(m_vol[i][1])+"V");
+            m_vol_cur_LabelList.at(i*6+2)->setText(QString::number(m_vol[i][2])+"V");
+            m_vol_cur_LabelList.at(i*6+3)->setText(QString::number(m_cur[i][0])+"A");
+            m_vol_cur_LabelList.at(i*6+4)->setText(QString::number(m_cur[i][1])+"A");
+            m_vol_cur_LabelList.at(i*6+5)->setText(QString::number(m_cur[i][2])+"A");
+            m_slave_name_LabelList.at(i)->setStyleSheet("background: transparent;");
+        }
     }
 }
 
@@ -330,10 +351,11 @@ void MainWindow::readyRead_slot()
 //    qDebug()<<"rev:"<<m_tcpsocket->readAll();
     if(data.size() == 69)
     {
-        rev_id = cdata[1]*256+cdata[2];
-        rev_id = rev_id - 1;
+        rev_id = cdata[1];
+        rev_id = rev_id;
         if(rev_id >= 0 && rev_id <= 4)
         {
+            m_slave_name_LabelList.at(rev_id)->setStyleSheet("background-color: green;");
             for(int i = 0; i < 6; i++)
             {
                 m_buttonList.at(6*rev_id+i)->setDisabled(false);

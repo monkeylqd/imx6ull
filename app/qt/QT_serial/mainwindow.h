@@ -183,7 +183,7 @@ private slots:
 
     void on_salve_05_ctr06_clicked();
 
-    void on_socket_connext_clicked();
+    void on_socket_connect_clicked();
 
 private:
     Ui::MainWindow *ui;

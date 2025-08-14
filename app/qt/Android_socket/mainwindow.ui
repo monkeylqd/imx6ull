@@ -50,35 +50,35 @@
      </widget>
     </item>
     <item row="1" column="2">
-     <widget class="QLabel" name="label_6">
+     <widget class="QLabel" name="slave_1_name">
       <property name="text">
        <string>分机1</string>
       </property>
      </widget>
     </item>
     <item row="1" column="3">
-     <widget class="QLabel" name="label_7">
+     <widget class="QLabel" name="slave_2_name">
       <property name="text">
        <string>分机2</string>
       </property>
      </widget>
     </item>
     <item row="1" column="5">
-     <widget class="QLabel" name="label_8">
+     <widget class="QLabel" name="slave_3_name">
       <property name="text">
        <string>分机3</string>
       </property>
      </widget>
     </item>
     <item row="1" column="6">
-     <widget class="QLabel" name="label_9">
+     <widget class="QLabel" name="slave_4_name">
       <property name="text">
        <string>分机4</string>
       </property>
      </widget>
     </item>
     <item row="1" column="7">
-     <widget class="QLabel" name="label_10">
+     <widget class="QLabel" name="slave_5_name">
       <property name="text">
        <string>分机5</string>
       </property>
@@ -645,7 +645,7 @@
      <x>0</x>
      <y>0</y>
      <width>589</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
