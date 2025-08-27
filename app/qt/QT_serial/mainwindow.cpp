@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+unsigned char rev_socket_buf[1024];     //用于存储接收到的socket数据
+int r_index = 0;
+int w_index = 0;
 void cust_delay(int ms) {
     QEventLoop loop;
     QTimer::singleShot(ms, &loop, SLOT(quit()));
@@ -14,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     m_socket_status = SOCKET_STATUS_DISCONNECT;
 //    m_id = 0;
+    memset(rev_socket_buf, 0, sizeof(rev_socket_buf));
     memset(&m_ctl_value, 0, sizeof(m_ctl_value));
     memset(&m_CH_value, 0, sizeof(m_CH_value));
     memset(&m_click_flag, 0, sizeof(m_click_flag));
@@ -202,6 +206,98 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::rev_form_server(const QByteArray &data)
+{
+    int par_index = 0;
+    int copy_data_len = 0;
+    unsigned char check_sum = 0;
+    unsigned char frame_buffer[128];        // 解析到的帧数据放这里，用于后续使用
+
+
+    const char* cdata = data.constData();
+    qDebug()<<"rev data";
+
+    // 将收到的数据保存到 total_buffer 里面
+    copy_data_len = data.size();
+    if(copy_data_len+w_index > sizeof (total_buffer))
+    {
+        copy_data_len = sizeof (total_buffer) - w_index;
+    }
+    memcpy(total_buffer + w_index, cdata, copy_data_len);
+    w_index += data.size();
+
+    par_index = 0;
+
+    qDebug()<<"w_index="<<w_index;
+
+
+    // 解析total_buffer中的数据
+    // 循环里面会用到i+2，所以i的取值范围是0到w_index-2和sizeof(total_buffer)-2中的较小值
+    for(int i = 0; (i < w_index-2) && (i < (sizeof(total_buffer)-2)); i++)
+    {
+        // 先查找tou 0xaa
+        if(total_buffer[i] != 0xaa)
+        {
+            // 将不符合的数据舍弃掉 par_index表示为已经解析过的数据的索引
+            par_index = i+1;
+            qDebug()<<"data isn't 0xaa";
+            continue;
+        }
+
+        // 头后面的第二个字节存储的是帧长度 确保剩余的数据长度满足一帧
+        if(total_buffer[i+2] <= w_index - i)
+        {
+            // 初始化 check_sum 和 frame_buffer
+            check_sum = 0;
+            memset(frame_buffer, 0, sizeof(frame_buffer));
+
+            // 计算checksum并将数据同步放入 frame_buffer
+            for(int j = 0; j < total_buffer[i+2]-1 && j < sizeof(frame_buffer); j++)
+            {
+                check_sum += total_buffer[i+j];
+                frame_buffer[j] = total_buffer[i+j];
+            }
+
+            // printf("checksum = %02x\n", check_sum);
+            // printf("total_buffer = %02x\n", total_buffer[i+total_buffer[i+2]-1]);
+
+            // 比较checksum
+            if(check_sum == total_buffer[i+total_buffer[i+2]-1])
+            {
+                frame_buffer[total_buffer[i+2]-1] = check_sum;
+                QByteArray frame_byteArray = QByteArray::fromRawData(reinterpret_cast<const char*>(frame_buffer), frame_buffer[2]);
+                use_form_server_data(frame_byteArray);
+                i = i + total_buffer[i+2]-1;    // 解析成功，直接更新i的index。-1是因为for循环里面会+1
+                par_index = i+1;                // 解析成功，将已经解析过的数据舍弃掉
+                // printf("parse success.\n");
+            }
+            else
+            {
+                printf("data checksum error");
+                par_index = i+1;                // 解析失败，将已经解析过的数据舍弃掉
+            }
+        }
+        else
+        {
+            // 数据长度不满足一帧，跳出循环
+            qDebug()<<"data is to small";
+            break;
+        }
+    }
+
+    if(par_index > 0)
+    {
+        // 如果total_buffer中还有剩余的数据，将其移动到total_buffer的开头
+        for(int i = 0; i < w_index - par_index; i++)
+        {
+            total_buffer[i] = total_buffer[i + par_index];
+        }
+        // 将其他数据置为0
+        memset(total_buffer+w_index - par_index, 0, sizeof(total_buffer) - w_index + par_index);
+        w_index = w_index - par_index;
+    }
+
+}
+void MainWindow::use_form_server_data(const QByteArray &data)
 {
     qDebug()<<"hex:"<<data.toHex();
     if(data.size() == 9 && data.at(0) == 0xaa && data.at(1) == 0xa0)
@@ -509,7 +605,7 @@ int MainWindow::parse_comm_data(QString str)
             {
                 if((ctl_buff[i]>>7) == 0)
                 {
-                    continue;
+                    break;//最高bit不是1，说明此状态不生效
                 }
                 else
                 {
@@ -517,6 +613,11 @@ int MainWindow::parse_comm_data(QString str)
                 }
                 if((((m_ctl_value[i]>>j)&1) == ((ctl_buff[i]>>j)&1)) || (m_click_flag[i]>>j&1))
                 {
+                    continue;
+                }
+                if(m_id == i)
+                {
+                    tri_ctl(j);//此函数里面会根据GPIO反馈的状态，去更新m_ctl_value[i]的值，所以不需要手动设置。
                     continue;
                 }
                 m_ctl_value[i] &=~(1<<j);
@@ -815,7 +916,7 @@ int MainWindow::send_socket_data()
     memset(m_send_buff, 0, sizeof(m_send_buff));
     m_send_buff[0] = 0xaa;  //头
     m_send_buff[1] = m_id & 0xff;  //app的ID
-    m_send_buff[2] = 0xff;  //预留
+    m_send_buff[2] = 69;    //数据长度
 
     // 分机1的通道1 电压电流
     m_send_buff[3] = (m_vol_cur_value[0][0]>>8) & 0xff;
@@ -915,8 +1016,11 @@ int MainWindow::send_socket_data()
     m_send_buff[66] = m_ctl_value[3];
     m_send_buff[67] = m_ctl_value[4];
 
-    // 尾
-    m_send_buff[68] = 0x55;
+    m_send_buff[68] = 0;
+    for(int i = 0; i < 68; i++)
+    {
+        m_send_buff[68] += m_send_buff[i];  //计算checksum
+    }
 #else
     srand(time(NULL));
     memset(m_send_buff, 0, sizeof(m_send_buff));

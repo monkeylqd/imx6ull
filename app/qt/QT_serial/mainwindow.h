@@ -73,6 +73,9 @@ public:
     int m_socket_status;
     QMutex m_mutex;                         // 用于发送socket数据的时候上锁
 
+    unsigned char total_buffer[4096];       // 接收到的数据保存到这里，用于后续解析
+    int w_index = 0;                        // total_buffer里面有多少数据
+
     int m_CH_value[3][6];       // 保持3路通道的电流电压值
     int m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
     int m_click_flag[5];
@@ -98,6 +101,7 @@ public slots:
     void report_socket_status(int status);
 
 public:
+    void use_form_server_data(const QByteArray &data);
     int parse_uart_data();
     void parse_vol_cur_data(int index_salve, QString inputs);     // 解析电压、电流的串口数据
     int parse_comm_data(QString str);

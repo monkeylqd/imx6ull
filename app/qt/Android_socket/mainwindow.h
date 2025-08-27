@@ -24,6 +24,7 @@ public:
     ~MainWindow();
     int button_click(int ch, int index);    // CTL按钮点击后，m_ctl_value值的改变
     int send_socket_data();                 // 发送socket数据。当点击按钮，CTL状态发生改变时，就发送数据。
+    int up_ui(unsigned char *cdata);                            // 更新VOL、CUR、CTL等值
 
 public:
     QList<QPushButton*> m_buttonList;       // 保存所有的CTL button按钮
@@ -34,6 +35,10 @@ public:
     unsigned int m_cur[5][3];               // 保存5个分机3个通道的电流值
     unsigned char m_send_buff[9];           // 用于组织socket发送的数据内存
     QMutex m_mutex;                         // 用于发送socket数据的时候上锁
+
+    unsigned char total_buffer[4096];       // 接收到的数据保存到这里，用于后续解析
+    int w_index = 0;                        // total_buffer里面有多少数据
+
 private slots:
     void on_connect_button_clicked();       // 连接socket按钮
 
