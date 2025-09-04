@@ -16,6 +16,7 @@
 #include <QStringList>
 #include <QRegularExpression>
 #include "socketclient.h"
+#include "id_config_window.h"
 
 #define USE_DEBUG    0
 
@@ -83,6 +84,7 @@ public:
 
     QString m_ID;                // 设备ID，8个字节
     qint64 m_id;
+    int m_config_id;
     QList<QString> m_dev_list;
     int m_device_type;                          // 设备类型，主机还是从机
     int m_comm_rev_flag;                        // 电力载波通信接口是否有收到数据的flag
@@ -90,6 +92,9 @@ public:
     QSerialPort *m_serial_vol_curr_CH02;        // 采集电压、电流的第2路串口
     QSerialPort *m_serial_vol_curr_CH03;        // 采集电压、电流的第3路串口
     QSerialPort *m_serial_power_communication;  // 电力载波通信串口
+
+
+    ID_CONFIG_WINDOW *m_id_ui;
 
 signals:
     void connect_server(QString ip, int port);
@@ -99,6 +104,12 @@ signals:
 public slots:
     void rev_form_server(const QByteArray &data);
     void report_socket_status(int status);
+
+signals:
+    void  sen_set_id_return(int value);
+
+public slots:
+    void  get_set_id_value(int id);
 
 public:
     void use_form_server_data(const QByteArray &data);
@@ -188,6 +199,8 @@ private slots:
     void on_salve_05_ctr06_clicked();
 
     void on_socket_connect_clicked();
+
+    void on_button_set_id_clicked();
 
 private:
     Ui::MainWindow *ui;

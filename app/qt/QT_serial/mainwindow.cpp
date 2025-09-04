@@ -15,6 +15,11 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_config_id = -1;
+    m_id_ui = new ID_CONFIG_WINDOW();
+
+    QObject::connect(this, &MainWindow::sen_set_id_return, m_id_ui, &ID_CONFIG_WINDOW::set_id_return, Qt::QueuedConnection);
+    QObject::connect(m_id_ui, &ID_CONFIG_WINDOW::set_id, this, &MainWindow::get_set_id_value, Qt::QueuedConnection);
     m_socket_status = SOCKET_STATUS_DISCONNECT;
 //    m_id = 0;
     memset(rev_socket_buf, 0, sizeof(rev_socket_buf));
@@ -198,6 +203,7 @@ MainWindow::MainWindow(QWidget *parent)
     {
         emit connect_server("47.109.24.25", 33306);
     }
+    qDebug()<<"MainWindow finish";
 }
 
 MainWindow::~MainWindow()
@@ -386,6 +392,15 @@ void MainWindow::report_socket_status(int status)
 
 }
 
+void MainWindow::get_set_id_value(int id)
+{
+    m_config_id = id;
+    QString str_id = "AT+ADDR=00000000000"+QString::number(id)+"\r\n";
+    m_serial_power_communication->write(str_id.toUtf8());
+    qDebug()<<"str_id:"<<str_id;
+
+}
+
 void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
 {
     QString test1 = inputs.remove(' ');
@@ -473,9 +488,9 @@ void MainWindow::parse_vol_cur_data(int index_ch, QString inputs)
     }
     qDebug()<<m_CH_value[index_ch][0]<<" "<<m_CH_value[index_ch][1]<<" "<<m_CH_value[index_ch][2]<<" "<<m_CH_value[index_ch][3]<<" "<<m_CH_value[index_ch][4]<<" "<<m_CH_value[index_ch][5];
 #endif
-    for (const auto &m : measurements) {
-        qDebug() << m.name << ":" << m.value << m.unit;
-    }
+//    for (const auto &m : measurements) {
+//        qDebug() << m.name << ":" << m.value << m.unit;
+//    }
 //    static int temp_value = 1;
 //    if(temp_value >= 999)
 //    {
@@ -501,6 +516,7 @@ int MainWindow::parse_comm_data(QString str)
     int vol_cur[6];
     int ctl_buff[5];
     memset(ctl_buff, 0, sizeof(ctl_buff));
+    qDebug()<<"parse_comm_data";
     if(str.contains("+ADDR="))
     {
         QStringList parts = str.split("=");
@@ -508,6 +524,24 @@ int MainWindow::parse_comm_data(QString str)
         {
             m_ID = parts[1];
             m_id = parts[1].toLongLong(&ok, 16);
+            if(m_id > 5 || m_id < 1)
+            {
+                m_id = 1;
+//                m_serial_power_communication->write("AT+ADDR=000000000001\r\n");
+            }
+            if(m_config_id == m_id)
+            {
+                emit sen_set_id_return(1);      // ID设置成功
+                m_config_id = -1;
+                m_master_timer->stop();
+            }
+            else if(m_config_id != -1 && m_config_id != m_id)
+            {
+                emit sen_set_id_return(0);      // ID设置失败
+                m_config_id = -1;
+                m_master_timer->stop();
+            }
+//            m_id = 1;
             m_id = m_id -1;
             qDebug()<<"m_ID:"<<m_ID;
             qDebug()<<"m_id:"<<m_id;
@@ -1218,7 +1252,7 @@ void MainWindow::read_serial_vol_curr_CH01()
     QByteArray read_buff;
     cust_delay(1000);
     read_buff = m_serial_vol_curr_CH01->readAll();
-    qDebug("CH01 read:%s\n", qPrintable(QString(read_buff)));
+//    qDebug("CH01 read:%s\n", qPrintable(QString(read_buff)));
     parse_vol_cur_data(0, QString(read_buff));
 
 }
@@ -1228,7 +1262,7 @@ void MainWindow::read_serial_vol_curr_CH02()
     QByteArray read_buff;
     cust_delay(1000);
     read_buff = m_serial_vol_curr_CH02->readAll();
-    qDebug("CH02 read:%s\n", qPrintable(QString(read_buff)));
+//    qDebug("CH02 read:%s\n", qPrintable(QString(read_buff)));
     parse_vol_cur_data(1, QString(read_buff));
 }
 
@@ -1237,7 +1271,7 @@ void MainWindow::read_serial_vol_curr_CH03()
     QByteArray read_buff;
     cust_delay(1000);
     read_buff = m_serial_vol_curr_CH03->readAll();
-    qDebug("CH03 read:%s\n", qPrintable(QString(read_buff)));
+//    qDebug("CH03 read:%s\n", qPrintable(QString(read_buff)));
     parse_vol_cur_data(2, QString(read_buff));
 }
 
@@ -1294,7 +1328,12 @@ void MainWindow::on_comm_send_timeout()
 
 void MainWindow::on_master_timeout()
 {
-
+    m_master_timer->stop();
+    if(m_config_id != -1)
+    {
+        emit sen_set_id_return(0);
+    }
+    m_config_id = -1;
 }
 
 void MainWindow::on_slave_timeout()
@@ -1520,4 +1559,22 @@ void MainWindow::on_socket_connect_clicked()
         emit connect_server(ui->IP_lineEdit->text(), ui->PORT_lineEdit->text().toUInt());
     }
 
+}
+
+void MainWindow::on_button_set_id_clicked()
+{
+    static int flag = 0;
+    if(flag == 0)
+    {
+        m_id_ui->show();
+        flag = 1;
+
+        ui->button_set_id->setText("退出配置");
+    }
+    else
+    {
+        m_id_ui->hide();
+        flag = 0;
+        ui->button_set_id->setText("配置ID");
+    }
 }

@@ -16,15 +16,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    id_config_window.cpp \
     main.cpp \
     mainwindow.cpp \
     socketclient.cpp
 
 HEADERS += \
+    id_config_window.h \
     mainwindow.h \
     socketclient.h
 
 FORMS += \
+    id_config_window.ui \
     mainwindow.ui
 
 # Default rules for deployment.
