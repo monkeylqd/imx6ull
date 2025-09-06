@@ -66,6 +66,7 @@ public:
     QTimer *m_master_timer;
     QTimer *m_slave_timer;
     QTimer *m_comm_send_timer;
+    QTimer *m_on_line_timer;
     QStringList m_ctl_cmd;
 
 
@@ -81,6 +82,7 @@ public:
     int m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
     int m_click_flag[5];
     int m_vol_cur_value[5][6];  // 5个分机的电压电流信息
+    int on_line_flag[5];        // 检测分机是否存在的标志
 
     QString m_ID;                // 设备ID，8个字节
     qint64 m_id;
@@ -124,6 +126,7 @@ public:
     int tri_ctl(int index);
     int button_click(int ch, int index);
     int send_socket_data();
+    void on_comm_send_ctl();
 
 private slots:
 
@@ -137,6 +140,7 @@ private slots:
     void on_comm_send_timeout();
     void on_master_timeout();
     void on_slave_timeout();
+    void on_online_timeout();
 
     void on_salve_01_ctr01_clicked();
 
