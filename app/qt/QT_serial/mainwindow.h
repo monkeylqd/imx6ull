@@ -81,6 +81,7 @@ public:
     int m_CH_value[3][6];       // 保持3路通道的电流电压值
     int m_ctl_value[5];        // 保存5个分机的开关控制信息，按bit去控制
     int m_click_flag[5];
+    int m_button_click_flag[5];
     int m_vol_cur_value[5][6];  // 5个分机的电压电流信息
     int on_line_flag[5];        // 检测分机是否存在的标志
 

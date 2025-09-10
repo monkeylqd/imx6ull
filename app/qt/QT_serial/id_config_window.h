@@ -33,6 +33,8 @@ private slots:
 
     void on_pushButton_5_clicked();
 
+    void on_pushButton_setID_clicked();
+
 private:
     Ui::ID_CONFIG_WINDOW *ui;
 };

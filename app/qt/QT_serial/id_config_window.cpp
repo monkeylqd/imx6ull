@@ -66,3 +66,15 @@ void ID_CONFIG_WINDOW::on_pushButton_5_clicked()
     emit set_id(5);
 
 }
+
+void ID_CONFIG_WINDOW::on_pushButton_setID_clicked()
+{
+    bool ok;
+    int id = ui->lineEdit_id->text().toInt(&ok);
+    if(!ok || id > 5 || id < 1)
+    {
+        QMessageBox::question(NULL, "error", "无效的ID值", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        return;
+    }
+    emit set_id(id);
+}

@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     memset(&m_ctl_value, 0, sizeof(m_ctl_value));
     memset(&m_CH_value, 0, sizeof(m_CH_value));
     memset(&m_click_flag, 0, sizeof(m_click_flag));
+    memset(&m_button_click_flag, 0, sizeof(m_button_click_flag));
     m_socket_client = new SocketClient();
     m_socket_thread = new QThread();
     m_socket_client->moveToThread(m_socket_thread);
@@ -690,6 +691,29 @@ int MainWindow::parse_comm_data(QString str)
             {
                 m_comm_send_timer->start((5-(m_id-rev_id)-1)*2000+1000);
             }
+
+            if(m_button_click_flag[rev_id] != 0)
+            {
+                for(int i = 0; i < 6; i++)
+                {
+                    if((m_button_click_flag[rev_id] >> i) & 0x1)
+                    {
+                        if(((m_ctl_value[rev_id]>>i) & 0x1) == ((ctl_buff[rev_id] >> i) & 0x1))
+                        {
+                            // 如果设置成功，清空背景色
+                            m_buttonList.at(rev_id*6+i)->setStyleSheet("QPushButton { background-color: none; }");
+                        }
+                        else
+                        {
+                            // 如果没有设置成功，背景色设置红色
+                            m_buttonList.at(rev_id*6+i)->setStyleSheet("QPushButton { background-color: red; }");
+                        }
+                    }
+                }
+            }
+            m_ctl_value[rev_id] = ctl_buff[rev_id];
+            m_button_click_flag[rev_id] = 0;
+            up_ctl_text();
             return 0;
         }
         // 比较开关信息，并更新开关信息
@@ -999,6 +1023,7 @@ int MainWindow::button_click(int ch, int index)
         }
         // 翻转状态
         m_ctl_value[ch] ^=1<<index;
+        m_buttonList.at(ch*6+index)->setStyleSheet("background-color: yellow;");
     }
     up_ctl_text();
     on_comm_send_ctl();
@@ -1466,42 +1491,50 @@ void MainWindow::on_online_timeout()
 void MainWindow::on_salve_01_ctr01_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<0;
+    m_button_click_flag[0] = m_button_click_flag[0] | 1<<0;
+
     button_click(0, 0);
 }
 
 void MainWindow::on_salve_01_ctr02_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<1;
+    m_button_click_flag[0] = m_button_click_flag[0] | 1<<1;
     button_click(0, 1);
 }
 
 void MainWindow::on_salve_01_ctr03_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<2;
+    m_button_click_flag[0] = m_button_click_flag[0] | 1<<2;
     button_click(0, 2);
 }
 
 void MainWindow::on_salve_01_ctr04_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<3;
+    m_button_click_flag[0] = m_button_click_flag[0] | 1<<3;
     button_click(0, 3);
 }
 
 void MainWindow::on_salve_01_ctr05_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<4;
+    m_button_click_flag[0] = m_button_click_flag[0] | 1<<4;
     button_click(0, 4);
 }
 
 void MainWindow::on_salve_01_ctr06_clicked()
 {
     m_click_flag[0] = m_click_flag[0] | 1<<5;
+    m_button_click_flag[0] = m_button_click_flag[0] | 1<<5;
     button_click(0, 5);
 }
 
 void MainWindow::on_salve_02_ctr01_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<0;
+    m_button_click_flag[1] = m_button_click_flag[1] | 1<<0;
     button_click(1, 0);
 
 }
@@ -1509,6 +1542,7 @@ void MainWindow::on_salve_02_ctr01_clicked()
 void MainWindow::on_salve_02_ctr02_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<1;
+    m_button_click_flag[1] = m_button_click_flag[1] | 1<<1;
     button_click(1, 1);
 
 }
@@ -1516,6 +1550,7 @@ void MainWindow::on_salve_02_ctr02_clicked()
 void MainWindow::on_salve_02_ctr03_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<2;
+    m_button_click_flag[1] = m_button_click_flag[1] | 1<<2;
     button_click(1, 2);
 
 }
@@ -1523,6 +1558,7 @@ void MainWindow::on_salve_02_ctr03_clicked()
 void MainWindow::on_salve_02_ctr04_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<3;
+    m_button_click_flag[1] = m_button_click_flag[1] | 1<<3;
     button_click(1, 3);
 
 }
@@ -1530,6 +1566,7 @@ void MainWindow::on_salve_02_ctr04_clicked()
 void MainWindow::on_salve_02_ctr05_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<4;
+    m_button_click_flag[1] = m_button_click_flag[1] | 1<<4;
     button_click(1, 4);
 
 }
@@ -1537,6 +1574,7 @@ void MainWindow::on_salve_02_ctr05_clicked()
 void MainWindow::on_salve_02_ctr06_clicked()
 {
     m_click_flag[1] = m_click_flag[1] | 1<<5;
+    m_button_click_flag[1] = m_button_click_flag[1] | 1<<5;
     button_click(1, 5);
 
 }
@@ -1544,6 +1582,7 @@ void MainWindow::on_salve_02_ctr06_clicked()
 void MainWindow::on_salve_03_ctr01_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<0;
+    m_button_click_flag[2] = m_button_click_flag[2] | 1<<0;
     button_click(2, 0);
 
 }
@@ -1551,6 +1590,7 @@ void MainWindow::on_salve_03_ctr01_clicked()
 void MainWindow::on_salve_03_ctr02_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<1;
+    m_button_click_flag[2] = m_button_click_flag[2] | 1<<1;
     button_click(2, 1);
 
 }
@@ -1558,6 +1598,7 @@ void MainWindow::on_salve_03_ctr02_clicked()
 void MainWindow::on_salve_03_ctr03_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<2;
+    m_button_click_flag[2] = m_button_click_flag[2] | 1<<2;
     button_click(2, 2);
 
 }
@@ -1565,6 +1606,7 @@ void MainWindow::on_salve_03_ctr03_clicked()
 void MainWindow::on_salve_03_ctr04_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<3;
+    m_button_click_flag[2] = m_button_click_flag[2] | 1<<3;
     button_click(2, 3);
 
 }
@@ -1572,6 +1614,7 @@ void MainWindow::on_salve_03_ctr04_clicked()
 void MainWindow::on_salve_03_ctr05_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<4;
+    m_button_click_flag[2] = m_button_click_flag[2] | 1<<4;
     button_click(2, 4);
 
 }
@@ -1579,6 +1622,7 @@ void MainWindow::on_salve_03_ctr05_clicked()
 void MainWindow::on_salve_03_ctr06_clicked()
 {
     m_click_flag[2] = m_click_flag[2] | 1<<5;
+    m_button_click_flag[2] = m_button_click_flag[2] | 1<<5;
     button_click(2, 5);
 
 }
@@ -1586,6 +1630,7 @@ void MainWindow::on_salve_03_ctr06_clicked()
 void MainWindow::on_salve_04_ctr01_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<0;
+    m_button_click_flag[3] = m_button_click_flag[3] | 1<<0;
     button_click(3, 0);
 
 }
@@ -1593,6 +1638,7 @@ void MainWindow::on_salve_04_ctr01_clicked()
 void MainWindow::on_salve_04_ctr02_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<1;
+    m_button_click_flag[3] = m_button_click_flag[3] | 1<<1;
     button_click(3, 1);
 
 }
@@ -1600,6 +1646,7 @@ void MainWindow::on_salve_04_ctr02_clicked()
 void MainWindow::on_salve_04_ctr03_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<2;
+    m_button_click_flag[3] = m_button_click_flag[3] | 1<<2;
     button_click(3, 2);
 
 }
@@ -1607,6 +1654,7 @@ void MainWindow::on_salve_04_ctr03_clicked()
 void MainWindow::on_salve_04_ctr04_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<3;
+    m_button_click_flag[3] = m_button_click_flag[3] | 1<<3;
     button_click(3, 3);
 
 }
@@ -1614,6 +1662,7 @@ void MainWindow::on_salve_04_ctr04_clicked()
 void MainWindow::on_salve_04_ctr05_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<4;
+    m_button_click_flag[3] = m_button_click_flag[3] | 1<<4;
     button_click(3, 4);
 
 }
@@ -1621,6 +1670,7 @@ void MainWindow::on_salve_04_ctr05_clicked()
 void MainWindow::on_salve_04_ctr06_clicked()
 {
     m_click_flag[3] = m_click_flag[3] | 1<<5;
+    m_button_click_flag[3] = m_button_click_flag[3] | 1<<5;
     button_click(3, 5);
 
 }
@@ -1628,6 +1678,7 @@ void MainWindow::on_salve_04_ctr06_clicked()
 void MainWindow::on_salve_05_ctr01_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<0;
+    m_button_click_flag[4] = m_button_click_flag[4] | 1<<0;
     button_click(4, 0);
 
 }
@@ -1635,6 +1686,7 @@ void MainWindow::on_salve_05_ctr01_clicked()
 void MainWindow::on_salve_05_ctr02_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<1;
+    m_button_click_flag[4] = m_button_click_flag[4] | 1<<1;
     button_click(4, 1);
 
 }
@@ -1642,6 +1694,7 @@ void MainWindow::on_salve_05_ctr02_clicked()
 void MainWindow::on_salve_05_ctr03_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<2;
+    m_button_click_flag[4] = m_button_click_flag[4] | 1<<2;
     button_click(4, 2);
 
 }
@@ -1649,6 +1702,7 @@ void MainWindow::on_salve_05_ctr03_clicked()
 void MainWindow::on_salve_05_ctr04_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<3;
+    m_button_click_flag[4] = m_button_click_flag[4] | 1<<3;
     button_click(4, 3);
 
 }
@@ -1656,6 +1710,7 @@ void MainWindow::on_salve_05_ctr04_clicked()
 void MainWindow::on_salve_05_ctr05_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<4;
+    m_button_click_flag[4] = m_button_click_flag[4] | 1<<4;
     button_click(4, 4);
 
 }
@@ -1663,6 +1718,7 @@ void MainWindow::on_salve_05_ctr05_clicked()
 void MainWindow::on_salve_05_ctr06_clicked()
 {
     m_click_flag[4] = m_click_flag[4] | 1<<5;
+    m_button_click_flag[4] = m_button_click_flag[4] | 1<<5;
     button_click(4, 5);
 }
 
