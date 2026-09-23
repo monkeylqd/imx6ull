@@ -23,6 +23,10 @@ void config_window::get_set_id_return(int value)
     {
         QMessageBox::information(this, "标题", "设备ID设置成功，请给设备重新上下电。");
     }
+    else if(value == 2)
+    {
+        QMessageBox::information(this, "标题", "设备ID已经为目标ID，无需重复设置");
+    }
     else
     {
         QMessageBox::information(this, "标题", "设备ID设置失败，请重试。");

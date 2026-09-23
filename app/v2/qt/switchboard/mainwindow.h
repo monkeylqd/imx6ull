@@ -21,6 +21,12 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+typedef struct JDQ_CTL_INFO
+{
+    int index;
+    int status;
+    int ctl;
+}JDQ_CTL_INFO_t;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -34,6 +40,7 @@ private slots:
     void connected_slot();
     void disconnect_slot();
     void readyRead_slot();
+    void m_timer_slot();
 
     void on_pushButton_1_A_clicked();
     void on_pushButton_1_B_clicked();
@@ -68,17 +75,33 @@ public slots:
     void read_serial_vol_curr_CH02();
     void read_serial_vol_curr_CH03();
     void read_serial_power_communication();
+
 private:
     Ui::MainWindow *ui;
     QTcpSocket *m_tcpsocket;
     QList<QPushButton*> m_buttonList;
     QList<QLabel*> m_vol_cur_LabelList;     // 保存所有的电压、电流label值
+    QStringList m_ctl_cmd;
+
     int m_connect_flag;
+    int m_config_id;
+    int m_count;
     unsigned char sub_status[2][6]; // sub_status[0][i]表示状态  sub_status[1][i]表示颜色
+    unsigned char new_sub_status[2][6];
+    int m_vol_cur_value[10][6];
+    int init_list_ui();
     int set_sub_status();
-    int update_ui(unsigned char *data, int len);
+    int update_ui();
     int init_serialport();
-    int config_tir_ctl(int status);
+    int config_tir_ctl(int next_status);
+    int ctl_gpio_status(int status_index);
+    int set_gpio_value(int gpio_index, int gpio_value);
+    int get_gpio_value(int gpio_index);
+    void parse_vol_cur_data(int index_ch, QString inputs);
+    int parse_comm_data(QString str);
+    int send_board_data();
+    int send_data_to_app();
+    int cal_index(int cur, int next);
     unsigned char m_send_buff[8];           // 用于组织socket发送的数据内存
     QMutex m_mutex;                         // 用于发送socket数据的时候上锁
     unsigned char total_buff[4096];       // 接收到的数据保存到这里，用于后续解析
@@ -95,5 +118,7 @@ private:
     QSerialPort *m_serial_vol_curr_CH02;        // 采集电压、电流的第2路串口
     QSerialPort *m_serial_vol_curr_CH03;        // 采集电压、电流的第3路串口
     QSerialPort *m_serial_power_communication;  // 电力载波通信串口
+
+    QTimer *m_timer;
 };
 #endif // MAINWINDOW_H

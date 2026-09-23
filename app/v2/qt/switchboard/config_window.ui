@@ -92,7 +92,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit_device_id"/>
+     <widget class="QLineEdit" name="lineEdit_device_id">
+      <property name="text">
+       <string>4</string>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QPushButton" name="pushButton_ch_id">
