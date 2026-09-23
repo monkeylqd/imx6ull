@@ -49,13 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_buttonList.append(ui->pushButton_5_B);
     m_buttonList.append(ui->pushButton_5_C);
 
-    m_vol_cur_LabelList.append(ui->label_0_0V);
-    m_vol_cur_LabelList.append(ui->label_0_0A);
-    m_vol_cur_LabelList.append(ui->label_0_1V);
-    m_vol_cur_LabelList.append(ui->label_0_1A);
-    m_vol_cur_LabelList.append(ui->label_0_2V);
-    m_vol_cur_LabelList.append(ui->label_0_2A);
-
     m_vol_cur_LabelList.append(ui->label_1_0V);
     m_vol_cur_LabelList.append(ui->label_1_0A);
     m_vol_cur_LabelList.append(ui->label_1_1V);
@@ -90,6 +83,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_vol_cur_LabelList.append(ui->label_5_1A);
     m_vol_cur_LabelList.append(ui->label_5_2V);
     m_vol_cur_LabelList.append(ui->label_5_2A);
+
+    m_vol_cur_LabelList.append(ui->label_0_0V);
+    m_vol_cur_LabelList.append(ui->label_0_0A);
+    m_vol_cur_LabelList.append(ui->label_0_1V);
+    m_vol_cur_LabelList.append(ui->label_0_1A);
+    m_vol_cur_LabelList.append(ui->label_0_2V);
+    m_vol_cur_LabelList.append(ui->label_0_2A);
 
 //    for(int i = 0; i <m_buttonList.size(); i++)
 //    {
@@ -347,11 +347,10 @@ int MainWindow::update_ui(unsigned char *data, int len)
         value[3] = ptr[i*13+6]*256+ptr[i*13+7];
         value[4] = ptr[i*13+8]*256+ptr[i*13+9];
         value[5] = ptr[i*13+10]*256+ptr[i*13+11];
-        if(i > 0)
-        {
-            sub_status[0][i-1] = ptr[i*13+12];
-            sub_status[1][i-1] = SUB_STATUS_GREEN;
-        }
+
+        sub_status[0][i] = ptr[i*13+12];
+        sub_status[1][i] = SUB_STATUS_GREEN;
+
         m_vol_cur_LabelList.at(i*6+0)->setText(QString::number(value[0])+"V");
         m_vol_cur_LabelList.at(i*6+1)->setText(QString::number(value[1])+"A");
         m_vol_cur_LabelList.at(i*6+2)->setText(QString::number(value[2])+"V");
