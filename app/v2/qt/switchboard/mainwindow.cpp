@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_timer->start(1000);
     m_connect_flag = 0;
     m_total_len = 0;
-    memset(sub_status, 1, sizeof (sub_status));
+    // memset(sub_status, 1, sizeof (sub_status));
     memset(total_buff, 1, sizeof (total_buff));
     this->showFullScreen();
     ui->setupUi(this);
@@ -245,6 +245,10 @@ void MainWindow::m_timer_slot()
     {
         m_serial_power_communication->write("AT+ADDR?\r\n");
     }
+    else
+    {
+        get_sub_status();
+    }
 
     for(i = 0; i < 6; i++)
     {
@@ -355,6 +359,43 @@ int MainWindow::set_sub_status()
         }
     }
     return 0;
+}
+
+int MainWindow::get_sub_status()
+{
+    int ret = 0;
+    int i = 0;
+    int gpio_value[6];
+    for(i = 0; i < 4; i++)
+    {
+        gpio_value[i] = get_gpio_value(i);
+    }
+    qDebug()<<"value:"<<gpio_value[0]<<gpio_value[1]<<gpio_value[2]<<gpio_value[3];
+    if(gpio_value[0] == 0 && gpio_value[1] == 1)
+    {
+        sub_status[0][m_id] = SUB_STATUS_A;
+    }
+    else if((gpio_value[0] == 1 || gpio_value[1] == 0) && gpio_value[2] == 0 && gpio_value[3] == 1)
+    {
+        sub_status[0][m_id] = SUB_STATUS_B;
+    }
+    else if(gpio_value[2] == 1 && gpio_value[3] == 0)
+    {
+        sub_status[0][m_id] = SUB_STATUS_C;
+    }
+    else
+    {
+        qDebug()<<"get sub_status fail.";
+        // ret = ctl_gpio_status(2);// B->A
+        // if(ret == 0)
+        // {
+        //     sub_status[0][m_id] = SUB_STATUS_A;
+        // }
+        // else
+        // {
+            
+        // }
+    }
 }
 int MainWindow::update_ui()
 {
@@ -634,9 +675,11 @@ int MainWindow::ctl_gpio_status(int status_index)
         {
             break;
         }
-        jdq_index = jdq_index -1;
         stat = info[status_index][i].status;
         ctl = info[status_index][i].ctl;
+
+        qDebug()<<"jdq_index="<<jdq_index<<" stat="<<stat<<" ctl="<<ctl;
+        jdq_index = jdq_index -1;
 
         ret = get_gpio_value(jdq_index);
         if(ret != stat)
@@ -644,23 +687,22 @@ int MainWindow::ctl_gpio_status(int status_index)
             ret = set_gpio_value(jdq_index, stat);
             if(ret != 0 && ctl == 1)
             {
+                qDebug()<<"set_gpio_value fail.";
                 break;
             }
-            else if(ctl == 2)
+            else if(ret == 0 && ctl == 2)
             {
                 continue;
             }
         }
         else
         {
+            if(ctl == 2)
+            {
+                ret = 0;
+                continue;
+            }
             ret = 0;
-        }
-
-
-
-        if(ctl == 1)
-        {
-            break;
         }
     }
 
@@ -959,6 +1001,11 @@ int MainWindow::send_data_to_app()
     unsigned char data[81];
     unsigned char *ptr = NULL;
     unsigned char check_sum = 0;
+
+    if (m_connect_flag == 0)
+    {
+        return -1;
+    }
     data[0] = 0xaa;
     data[1] = 81;
     ptr = &data[2];

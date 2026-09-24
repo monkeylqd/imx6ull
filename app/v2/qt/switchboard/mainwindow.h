@@ -91,6 +91,7 @@ private:
     int m_vol_cur_value[10][6];
     int init_list_ui();
     int set_sub_status();
+    int get_sub_status();
     int update_ui();
     int init_serialport();
     int config_tir_ctl(int next_status);
